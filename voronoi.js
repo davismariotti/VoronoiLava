@@ -6,6 +6,7 @@ class Triangle {
         this.p2 = p2;
         this.p3 = p3;
         var circumcircle = this.circumcircle();
+        this.edges = [new Edge(p1, p2), new Edge(p1, p3), new Edge(p2, p3)];
         this.center = circumcircle.center;
         this.rad = circumcircle.rad;
     }
@@ -18,10 +19,25 @@ class Triangle {
         return point.equals(this.p1) || point.equals(this.p2) || point.equals(this.p3);
     }
 
+    containsEdge(edge) {
+        return (this.edges[0].equals(edge)) ||
+               (this.edges[1].equals(edge)) ||
+               (this.edges[2].equals(edge));
+    }
+
     sharesVertex(t) {
         return t.p1.equals(this.p1) || t.p1.equals(this.p2) || t.p1.equals(this.p3) ||
                t.p2.equals(this.p1) || t.p2.equals(this.p2) || t.p2.equals(this.p3) ||
                t.p3.equals(this.p1) || t.p3.equals(this.p2) || t.p3.equals(this.p3);
+    }
+
+    sharesEdge(tri) {
+        for (e of this.edges) {
+            if (tri.containsEdge(e)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     circumcircle() {
