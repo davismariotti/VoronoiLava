@@ -32,12 +32,16 @@ class Triangle {
     }
 
     sharesEdge(tri) {
-        for (e of this.edges) {
+        for (let e of this.edges) {
             if (tri.containsEdge(e)) {
                 return true;
             }
         }
         return false;
+    }
+
+    equals(tri) {
+        return tri.containsEdge(this.edges[0]) && tri.containsEdge(this.edges[1]) && tri.containsEdge(this.edges[2]);
     }
 
     circumcircle() {
@@ -117,7 +121,6 @@ class Voronoi {
 
 
         this.removeSuperTriangles();
-        //this.points = this.points.slice(0, this.points.length-4);
 
         let ptToTri = {};
         for (let t of this.triangles) {
@@ -150,13 +153,10 @@ class Voronoi {
 
     addVertex(pIdx) {
         let pt = this.points[pIdx];
-        //console.log('POINT' , pt);
 
         // Find all triangles containing pt in circumcircle
         let circTriangles = [];
         for (let tri of this.triangles) {
-            //console.log('TRIANGLE', tri);
-            //console.log('CIRCUMSCRIBES', tri.circumscribes(pt));
             if (tri.circumscribes(pt)) {
                 circTriangles.push(tri);
             }
@@ -176,16 +176,12 @@ class Voronoi {
             );
         }
 
-        //console.log('edgeBuffer', edgeBuffer);
-
         let uniqueEdges = [];
         for (let i = 0; i < edgeBuffer.length; i++) {
             if (edgeBuffer[i].isUniqueIn(edgeBuffer)) {
                 uniqueEdges.push(edgeBuffer[i]);
             }
         }
-
-        //console.log('edgeBuffer UPDATED', edgeBuffer);
 
         for (let e of uniqueEdges) {
             this.triangles.push(new Triangle(pt, e.pt1, e.pt2));
@@ -225,7 +221,6 @@ class Voronoi {
             }
         }
         this.triangles = mTriangles;
-
         var sPts = this.superPoints;
         this.points = this.points.filter(function(el) {
             for (let sPt of sPts) {
@@ -240,11 +235,23 @@ class Voronoi {
     getNeighbors(triangle) {
         var tris = [];
         for (let tri of this.triangles) {
-            if (tri.sharesEdge(triange)) {
+            if (triangle.equals(tri)) {
+                continue;
+            }
+            if (tri.sharesEdge(triangle)) {
                 tris.push(tri);
             }
         }
         return tris;
+    }
+
+    setHasEdge(_set, e) {
+        for (let edge of _set) {
+            if (e.equals(edge)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     draw(c) {
@@ -258,7 +265,7 @@ class Voronoi {
             });
         }
 
-        for (let tri of this.triangles) {
+        /*for (let tri of this.triangles) {
             c.drawLine({
                 strokeStyle: 'steelBlue',
                 strokeWidth: 4,
@@ -268,7 +275,7 @@ class Voronoi {
                 closed: true,
                 rounded: true
             });
-        }
+        }*/
 
         // Draw circumcircles
         for (let triangle of this.triangles) {
@@ -280,31 +287,33 @@ class Voronoi {
             });
         }
 
-        for (let i = 0; i < this.triangles.length-1; i++) {
-            let t1 = this.triangles[i];
-            let t2 = this.triangles[i+1];
-            c.drawLine({
-                strokeStyle: 'red',
-                strokeWidth: 4,
-                x1: t1.center.x, y1: t1.center.y,
-                x2: t2.center.x, y2: t2.center.y,
-                closed: true,
-                rounded: true
-            });
-
-            c.drawArc({
-                strokeStyle: 'red',
-                strokeWidth: 4,
-                x: t1.center.x, y: t1.center.y,
-                radius: 2
-            });
+        var stack = [this.triangles[0]]; // Triangles
+        var visited = new Set(); // Edges
+        while (stack.length != 0) { // Inner voronoi edges
+            var triangle = stack.pop();
+            var neighbors = this.getNeighbors(triangle);
+            for (let neighbor of neighbors) {
+                var voronoiEdge = new Edge(neighbor.center, triangle.center);
+                if (!this.setHasEdge(visited, voronoiEdge)) {
+                    visited.add(voronoiEdge);
+                    stack.push(neighbor);
+                    c.drawLine({
+                        strokeStyle: 'red',
+                        strokeWidth: 4,
+                        x1: neighbor.center.x, y1: neighbor.center.y,
+                        x2: triangle.center.x, y2: triangle.center.y,
+                        closed: true,
+                        rounded: true
+                    });
+                }
+            }
         }
     }
 }
 
 let pNum = 10;
-const C_WIDTH = 500;
-const C_HEIGHT = 500;
+const C_WIDTH = 1000;
+const C_HEIGHT = 700;
 
 $(function() {
     let points = [];
@@ -312,28 +321,28 @@ $(function() {
     // for (var i = 0; i < pNum; i++) {
     //   points.push(new Point(Math.random() * C_WIDTH, Math.random() * C_HEIGHT));
     // }
-    //console.log(v);
     $("#canvas").click(function(event) {
         var $canvas = $("#canvas");
-        $canvas.clearCanvas();
         var x = event.offsetX;
         var y = event.offsetY;
         points.push(new Point(x, y));
-        //console.log(points);
 
-        // $canvas.drawArc({
-        //     strokeStyle: 'steelBlue',
-        //     strokeStyle: 'blue',
-        //     strokeWidth: 4,
-        //     x: x, y: y,
-        //     radius: 1
-        // });
+
 
         if (points.length >= 3) {
+            $canvas.clearCanvas();
             let v = new Voronoi(points);
             v.generate();
             v.draw($canvas);
 
+        } else {
+        $canvas.drawArc({
+                strokeStyle: 'steelBlue',
+                strokeStyle: 'blue',
+                strokeWidth: 4,
+                x: x, y: y,
+                radius: 2
+            });
         }
     });
 });

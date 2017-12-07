@@ -48,7 +48,7 @@ var Triangle = function () {
 
             try {
                 for (var _iterator = this.edges[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                    e = _step.value;
+                    var e = _step.value;
 
                     if (tri.containsEdge(e)) {
                         return true;
@@ -70,6 +70,11 @@ var Triangle = function () {
             }
 
             return false;
+        }
+    }, {
+        key: 'equals',
+        value: function equals(tri) {
+            return tri.containsEdge(this.edges[0]) && tri.containsEdge(this.edges[1]) && tri.containsEdge(this.edges[2]);
         }
     }, {
         key: 'circumcircle',
@@ -143,12 +148,12 @@ var Edge = function () {
 
             try {
                 for (var _iterator2 = edges[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                    var _e = _step2.value;
+                    var e = _step2.value;
 
-                    if (_e == this) {
+                    if (e == this) {
                         continue;
                     }
-                    if (this.equals(_e)) return false;
+                    if (this.equals(e)) return false;
                 }
             } catch (err) {
                 _didIteratorError2 = true;
@@ -193,7 +198,6 @@ var Voronoi = function () {
             }
 
             this.removeSuperTriangles();
-            //this.points = this.points.slice(0, this.points.length-4);
 
             var ptToTri = {};
             var _iteratorNormalCompletion3 = true;
@@ -269,7 +273,6 @@ var Voronoi = function () {
         key: 'addVertex',
         value: function addVertex(pIdx) {
             var pt = this.points[pIdx];
-            //console.log('POINT' , pt);
 
             // Find all triangles containing pt in circumcircle
             var circTriangles = [];
@@ -281,8 +284,6 @@ var Voronoi = function () {
                 for (var _iterator5 = this.triangles[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
                     var tri = _step5.value;
 
-                    //console.log('TRIANGLE', tri);
-                    //console.log('CIRCUMSCRIBES', tri.circumscribes(pt));
                     if (tri.circumscribes(pt)) {
                         circTriangles.push(tri);
                     }
@@ -319,8 +320,6 @@ var Voronoi = function () {
 
                     edgeBuffer.push(new Edge(t.p1, t.p2), new Edge(t.p2, t.p3), new Edge(t.p3, t.p1));
                 }
-
-                //console.log('edgeBuffer', edgeBuffer);
             } catch (err) {
                 _didIteratorError6 = true;
                 _iteratorError6 = err;
@@ -343,18 +342,16 @@ var Voronoi = function () {
                 }
             }
 
-            //console.log('edgeBuffer UPDATED', edgeBuffer);
-
             var _iteratorNormalCompletion7 = true;
             var _didIteratorError7 = false;
             var _iteratorError7 = undefined;
 
             try {
                 for (var _iterator7 = uniqueEdges[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-                    var _e2 = _step7.value;
+                    var e = _step7.value;
 
-                    this.triangles.push(new Triangle(pt, _e2.pt1, _e2.pt2));
-                    this._tris.push(new Triangle(pt, _e2.pt1, _e2.pt2));
+                    this.triangles.push(new Triangle(pt, e.pt1, e.pt2));
+                    this._tris.push(new Triangle(pt, e.pt1, e.pt2));
                 }
             } catch (err) {
                 _didIteratorError7 = true;
@@ -449,9 +446,6 @@ var Voronoi = function () {
             }
 
             this.triangles = mTriangles;
-
-            console.log(this.superPoints);
-            console.log(this.points);
             var sPts = this.superPoints;
             this.points = this.points.filter(function (el) {
                 var _iteratorNormalCompletion9 = true;
@@ -483,7 +477,6 @@ var Voronoi = function () {
 
                 return true;
             });
-            console.log(this.points);
         }
     }, {
         key: 'getNeighbors',
@@ -497,7 +490,10 @@ var Voronoi = function () {
                 for (var _iterator11 = this.triangles[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
                     var tri = _step11.value;
 
-                    if (tri.sharesEdge(triange)) {
+                    if (triangle.equals(tri)) {
+                        continue;
+                    }
+                    if (tri.sharesEdge(triangle)) {
                         tris.push(tri);
                     }
                 }
@@ -519,24 +515,19 @@ var Voronoi = function () {
             return tris;
         }
     }, {
-        key: 'draw',
-        value: function draw(c) {
-            console.log("draw", this.points);
+        key: 'setHasEdge',
+        value: function setHasEdge(_set, e) {
             var _iteratorNormalCompletion12 = true;
             var _didIteratorError12 = false;
             var _iteratorError12 = undefined;
 
             try {
-                for (var _iterator12 = this.points[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-                    var p = _step12.value;
+                for (var _iterator12 = _set[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+                    var edge = _step12.value;
 
-                    c.drawArc({
-                        strokeStyle: 'steelBlue',
-                        strokeStyle: 'blue',
-                        strokeWidth: 4,
-                        x: p.x, y: p.y,
-                        radius: 2
-                    });
+                    if (e.equals(edge)) {
+                        return true;
+                    }
                 }
             } catch (err) {
                 _didIteratorError12 = true;
@@ -553,14 +544,29 @@ var Voronoi = function () {
                 }
             }
 
+            return false;
+        }
+    }, {
+        key: 'draw',
+        value: function draw(c) {
             var _iteratorNormalCompletion13 = true;
             var _didIteratorError13 = false;
             var _iteratorError13 = undefined;
 
             try {
-                for (var _iterator13 = this.triangles[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
-                    var tri = _step13.value;
+                for (var _iterator13 = this.points[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+                    var p = _step13.value;
 
+                    c.drawArc({
+                        strokeStyle: 'steelBlue',
+                        strokeStyle: 'blue',
+                        strokeWidth: 4,
+                        x: p.x, y: p.y,
+                        radius: 2
+                    });
+                }
+
+                /*for (let tri of this.triangles) {
                     c.drawLine({
                         strokeStyle: 'steelBlue',
                         strokeWidth: 4,
@@ -570,7 +576,7 @@ var Voronoi = function () {
                         closed: true,
                         rounded: true
                     });
-                }
+                }*/
 
                 // Draw circumcircles
             } catch (err) {
@@ -594,12 +600,12 @@ var Voronoi = function () {
 
             try {
                 for (var _iterator14 = this.triangles[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
-                    var triangle = _step14.value;
+                    var _triangle = _step14.value;
 
                     c.drawArc({
                         strokeStyle: 'red',
                         strokeWidth: 4,
-                        x: triangle.center.x, y: triangle.center.y,
+                        x: _triangle.center.x, y: _triangle.center.y,
                         radius: 1
                     });
                 }
@@ -618,25 +624,69 @@ var Voronoi = function () {
                 }
             }
 
-            for (var i = 0; i < this.triangles.length - 1; i++) {
-                var t1 = this.triangles[i];
-                var t2 = this.triangles[i + 1];
-                c.drawLine({
-                    strokeStyle: 'red',
-                    strokeWidth: 4,
-                    x1: t1.center.x, y1: t1.center.y,
-                    x2: t2.center.x, y2: t2.center.y,
-                    closed: true,
-                    rounded: true
-                });
+            var stack = [this.triangles[0]]; // Triangles
+            var visited = new Set(); // Edges
+            while (stack.length != 0) {
+                // Inner voronoi edges
+                var triangle = stack.pop();
+                var neighbors = this.getNeighbors(triangle);
+                var _iteratorNormalCompletion15 = true;
+                var _didIteratorError15 = false;
+                var _iteratorError15 = undefined;
 
-                c.drawArc({
-                    strokeStyle: 'red',
-                    strokeWidth: 4,
-                    x: t1.center.x, y: t1.center.y,
-                    radius: 2
-                });
+                try {
+                    for (var _iterator15 = neighbors[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
+                        var neighbor = _step15.value;
+
+                        var voronoiEdge = new Edge(neighbor.center, triangle.center);
+                        if (!this.setHasEdge(visited, voronoiEdge)) {
+                            visited.add(voronoiEdge);
+                            stack.push(neighbor);
+                            c.drawLine({
+                                strokeStyle: 'red',
+                                strokeWidth: 4,
+                                x1: neighbor.center.x, y1: neighbor.center.y,
+                                x2: triangle.center.x, y2: triangle.center.y,
+                                closed: true,
+                                rounded: true
+                            });
+                        }
+                    }
+                } catch (err) {
+                    _didIteratorError15 = true;
+                    _iteratorError15 = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion15 && _iterator15.return) {
+                            _iterator15.return();
+                        }
+                    } finally {
+                        if (_didIteratorError15) {
+                            throw _iteratorError15;
+                        }
+                    }
+                }
             }
+
+            // for (let i = 0; i < this.triangles.length-1; i++) {
+            //     let t1 = this.triangles[i];
+            //     let t2 = this.triangles[i+1];
+            //     c.drawLine({
+            //         strokeStyle: 'red',
+            //         strokeWidth: 4,
+            //         x1: t1.center.x, y1: t1.center.y,
+            //         x2: t2.center.x, y2: t2.center.y,
+            //         closed: true,
+            //         rounded: true
+            //     });
+            //
+            //     c.drawArc({
+            //         strokeStyle: 'red',
+            //         strokeWidth: 4,
+            //         x: t1.center.x, y: t1.center.y,
+            //         radius: 2
+            //     });
+            // }
         }
     }]);
 
@@ -644,8 +694,8 @@ var Voronoi = function () {
 }();
 
 var pNum = 10;
-var C_WIDTH = 500;
-var C_HEIGHT = 500;
+var C_WIDTH = 1000;
+var C_HEIGHT = 700;
 
 $(function () {
     var points = [];
@@ -653,27 +703,25 @@ $(function () {
     // for (var i = 0; i < pNum; i++) {
     //   points.push(new Point(Math.random() * C_WIDTH, Math.random() * C_HEIGHT));
     // }
-    //console.log(v);
     $("#canvas").click(function (event) {
         var $canvas = $("#canvas");
-        $canvas.clearCanvas();
         var x = event.offsetX;
         var y = event.offsetY;
         points.push(new Point(x, y));
-        //console.log(points);
-
-        // $canvas.drawArc({
-        //     strokeStyle: 'steelBlue',
-        //     strokeStyle: 'blue',
-        //     strokeWidth: 4,
-        //     x: x, y: y,
-        //     radius: 1
-        // });
 
         if (points.length >= 3) {
+            $canvas.clearCanvas();
             var v = new Voronoi(points);
             v.generate();
             v.draw($canvas);
+        } else {
+            $canvas.drawArc({
+                strokeStyle: 'steelBlue',
+                strokeStyle: 'blue',
+                strokeWidth: 4,
+                x: x, y: y,
+                radius: 2
+            });
         }
     });
 });
