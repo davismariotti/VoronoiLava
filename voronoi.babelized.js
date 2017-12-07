@@ -132,9 +132,25 @@ var Edge = function () {
 
         this.pt1 = pt1;
         this.pt2 = pt2;
+        this.midpoint = this.midpoint();
     }
 
     _createClass(Edge, [{
+        key: 'midpoint',
+        value: function midpoint() {
+            return new Point((this.pt1.x + this.pt2.x) / 2, (this.pt1.y + this.pt2.y) / 2);
+        }
+    }, {
+        key: 'slope',
+        value: function slope() {
+            return (this.pt2.y - this.pt1.y) / (this.pt1.x - this.pt2.x);
+        }
+    }, {
+        key: 'perpendicularSlope',
+        value: function perpendicularSlope() {
+            return -1 / this.slope();
+        }
+    }, {
         key: 'equals',
         value: function equals(edge) {
             return edge.pt1.equals(this.pt1) && edge.pt2.equals(this.pt2) || edge.pt2.equals(this.pt1) && edge.pt1.equals(this.pt2);
@@ -668,25 +684,128 @@ var Voronoi = function () {
                 }
             }
 
-            // for (let i = 0; i < this.triangles.length-1; i++) {
-            //     let t1 = this.triangles[i];
-            //     let t2 = this.triangles[i+1];
-            //     c.drawLine({
-            //         strokeStyle: 'red',
-            //         strokeWidth: 4,
-            //         x1: t1.center.x, y1: t1.center.y,
-            //         x2: t2.center.x, y2: t2.center.y,
-            //         closed: true,
-            //         rounded: true
-            //     });
-            //
-            //     c.drawArc({
-            //         strokeStyle: 'red',
-            //         strokeWidth: 4,
-            //         x: t1.center.x, y: t1.center.y,
-            //         radius: 2
-            //     });
-            // }
+            var _iteratorNormalCompletion16 = true;
+            var _didIteratorError16 = false;
+            var _iteratorError16 = undefined;
+
+            try {
+                for (var _iterator16 = this.triangles[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
+                    var tri = _step16.value;
+
+                    var neighbors = this.getNeighbors(tri);
+                    var edgesToDrawToBorder = [];
+                    if (neighbors.length < 3) {
+                        var _iteratorNormalCompletion17 = true;
+                        var _didIteratorError17 = false;
+                        var _iteratorError17 = undefined;
+
+                        try {
+                            for (var _iterator17 = tri.edges[Symbol.iterator](), _step17; !(_iteratorNormalCompletion17 = (_step17 = _iterator17.next()).done); _iteratorNormalCompletion17 = true) {
+                                var edge = _step17.value;
+
+                                var neighborEdge = false;
+                                var _iteratorNormalCompletion19 = true;
+                                var _didIteratorError19 = false;
+                                var _iteratorError19 = undefined;
+
+                                try {
+                                    for (var _iterator19 = neighbors[Symbol.iterator](), _step19; !(_iteratorNormalCompletion19 = (_step19 = _iterator19.next()).done); _iteratorNormalCompletion19 = true) {
+                                        var _neighbor = _step19.value;
+
+                                        if (_neighbor.containsEdge(edge)) {
+                                            neighborEdge = true;
+                                        }
+                                    }
+                                } catch (err) {
+                                    _didIteratorError19 = true;
+                                    _iteratorError19 = err;
+                                } finally {
+                                    try {
+                                        if (!_iteratorNormalCompletion19 && _iterator19.return) {
+                                            _iterator19.return();
+                                        }
+                                    } finally {
+                                        if (_didIteratorError19) {
+                                            throw _iteratorError19;
+                                        }
+                                    }
+                                }
+
+                                if (!neighborEdge) {
+                                    edgesToDrawToBorder.push(edge);
+
+                                    c.drawLine({
+                                        strokeStyle: 'purple',
+                                        strokeWidth: 4,
+                                        x1: edge.pt1.x, y1: edge.pt1.y,
+                                        x2: edge.pt2.x, y2: edge.pt2.y,
+                                        closed: true,
+                                        rounded: true
+                                    });
+                                }
+                            }
+                        } catch (err) {
+                            _didIteratorError17 = true;
+                            _iteratorError17 = err;
+                        } finally {
+                            try {
+                                if (!_iteratorNormalCompletion17 && _iterator17.return) {
+                                    _iterator17.return();
+                                }
+                            } finally {
+                                if (_didIteratorError17) {
+                                    throw _iteratorError17;
+                                }
+                            }
+                        }
+
+                        var _iteratorNormalCompletion18 = true;
+                        var _didIteratorError18 = false;
+                        var _iteratorError18 = undefined;
+
+                        try {
+                            for (var _iterator18 = edgesToDrawToBorder[Symbol.iterator](), _step18; !(_iteratorNormalCompletion18 = (_step18 = _iterator18.next()).done); _iteratorNormalCompletion18 = true) {
+                                var edgeToDraw = _step18.value;
+
+                                c.drawLine({
+                                    strokeStyle: 'red',
+                                    strokeWidth: 4,
+                                    x1: edgeToDraw.midpoint.x, y1: edgeToDraw.midpoint.y,
+                                    x2: tri.center.x, y2: tri.center.y,
+                                    closed: true,
+                                    rounded: true
+                                });
+                            }
+                        } catch (err) {
+                            _didIteratorError18 = true;
+                            _iteratorError18 = err;
+                        } finally {
+                            try {
+                                if (!_iteratorNormalCompletion18 && _iterator18.return) {
+                                    _iterator18.return();
+                                }
+                            } finally {
+                                if (_didIteratorError18) {
+                                    throw _iteratorError18;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                _didIteratorError16 = true;
+                _iteratorError16 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion16 && _iterator16.return) {
+                        _iterator16.return();
+                    }
+                } finally {
+                    if (_didIteratorError16) {
+                        throw _iteratorError16;
+                    }
+                }
+            }
         }
     }]);
 

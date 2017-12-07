@@ -85,6 +85,19 @@ class Edge {
     constructor(pt1, pt2) {
         this.pt1 = pt1;
         this.pt2 = pt2;
+        this.midpoint = this.midpoint();
+    }
+
+    midpoint() {
+        return new Point((this.pt1.x + this.pt2.x) / 2, (this.pt1.y + this.pt2.y) / 2);
+    }
+
+    slope() {
+        return (this.pt2.y - this.pt1.y) / (this.pt1.x - this.pt2.x);
+    }
+
+    perpendicularSlope() {
+        return -1 / this.slope();
     }
 
     equals(edge) {
@@ -302,6 +315,43 @@ class Voronoi {
                         strokeWidth: 4,
                         x1: neighbor.center.x, y1: neighbor.center.y,
                         x2: triangle.center.x, y2: triangle.center.y,
+                        closed: true,
+                        rounded: true
+                    });
+                }
+            }
+        }
+
+        for (let tri of this.triangles) {
+            var neighbors = this.getNeighbors(tri);
+            var edgesToDrawToBorder = [];
+            if (neighbors.length < 3) {
+                for (let edge of tri.edges) {
+                    var neighborEdge = false;
+                    for (let neighbor of neighbors) {
+                        if (neighbor.containsEdge(edge)) {
+                            neighborEdge = true;
+                        }
+                    }
+                    if (!neighborEdge) {
+                        edgesToDrawToBorder.push(edge);
+
+                        c.drawLine({
+                            strokeStyle: 'purple',
+                            strokeWidth: 4,
+                            x1: edge.pt1.x, y1: edge.pt1.y,
+                            x2: edge.pt2.x, y2: edge.pt2.y,
+                            closed: true,
+                            rounded: true
+                        });
+                    }
+                }
+                for (let edgeToDraw of edgesToDrawToBorder) {
+                    c.drawLine({
+                        strokeStyle: 'red',
+                        strokeWidth: 4,
+                        x1: edgeToDraw.midpoint.x, y1: edgeToDraw.midpoint.y,
+                        x2: tri.center.x, y2: tri.center.y,
                         closed: true,
                         rounded: true
                     });
