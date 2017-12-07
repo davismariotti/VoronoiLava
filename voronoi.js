@@ -12,6 +12,14 @@ class Triangle {
         return pt.distanceTo(this.center) < this.rad;
     }
 
+    shareVertex(t) {
+        return (
+            t.p1 == this.p1 || t.p1 == this.p2 || t.p1 == this.p3 ||
+            t.p2 == this.p1 || t.p2 == this.p2 || t.p2 == this.p3 ||
+            t.p3 == this.p1 || t.p3 == this.p2 || t.p3 == this.p3
+        );
+    }
+
     circumcircle() {
         var x2copy = this.p2.x - this.p1.x;
         var y2copy = this.p2.y - this.p1.y;
@@ -55,7 +63,8 @@ class Edge {
     }
 
     equals(edge) {
-        return edge.p1.equals(this.p1) && edge.p2.equals(this.p2) && edge.p3.equals(this.p3);
+        return edge.pt1.equals(this.pt1) && edge.pt2.equals(this.pt2) ||
+               edge.pt2.equals(this.pt1) && edge.pt1.equals(this.pt2);
     }
 
     isUniqueIn(edges) {
@@ -83,6 +92,22 @@ class Voronoi {
         for (let i = 0; i < this.points.length; i++) {
             this.addVertex(i);
         }
+        
+        let mTriangles = [];
+        for (let tri of this.triangles) {
+            let sharesVertex = false;
+            for (let sTri of this.superTriangles) {
+                if (sTri.shareVertex(tri)) {
+                    sharesVertex = true;
+                    break;
+                }
+            }
+            
+            if (!sharesVertex) {
+                mTriangles.push(tri);
+            }
+        }
+        this.triangles = mTriangles;
     }
 
     addVertex(pIdx) {
