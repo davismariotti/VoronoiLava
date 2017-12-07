@@ -68,7 +68,8 @@ class Point {
     }
 
     equals(p) {
-        return Math.abs(p.x - this.x) < EPSILON && Math.abs(p.y - this.y);
+        return p.x == this.x && p.y == this.y;
+        //return Math.abs(p.x - this.x) < EPSILON && Math.abs(p.y - this.y) < EPSILON;
     }
 
     distanceTo(pt) {
@@ -116,7 +117,7 @@ class Voronoi {
 
 
         this.removeSuperTriangles();
-        this.points = this.points.slice(0, this.points.length-4);
+        //this.points = this.points.slice(0, this.points.length-4);
 
         let ptToTri = {};
         for (let t of this.triangles) {
@@ -149,13 +150,13 @@ class Voronoi {
 
     addVertex(pIdx) {
         let pt = this.points[pIdx];
-        console.log('POINT' , pt);
+        //console.log('POINT' , pt);
 
         // Find all triangles containing pt in circumcircle
         let circTriangles = [];
         for (let tri of this.triangles) {
-            console.log('TRIANGLE', tri);
-            console.log('CIRCUMSCRIBES', tri.circumscribes(pt));
+            //console.log('TRIANGLE', tri);
+            //console.log('CIRCUMSCRIBES', tri.circumscribes(pt));
             if (tri.circumscribes(pt)) {
                 circTriangles.push(tri);
             }
@@ -175,7 +176,7 @@ class Voronoi {
             );
         }
 
-        console.log('edgeBuffer', edgeBuffer);
+        //console.log('edgeBuffer', edgeBuffer);
 
         let uniqueEdges = [];
         for (let i = 0; i < edgeBuffer.length; i++) {
@@ -184,7 +185,7 @@ class Voronoi {
             }
         }
 
-        console.log('edgeBuffer UPDATED', edgeBuffer);
+        //console.log('edgeBuffer UPDATED', edgeBuffer);
 
         for (let e of uniqueEdges) {
             this.triangles.push(new Triangle(pt, e.pt1, e.pt2));
@@ -225,14 +226,15 @@ class Voronoi {
         }
         this.triangles = mTriangles;
 
-
-        for (var point in this.points) {
-            for (var sPt of this.superPoints) {
-                if (this.points[point].equals(sPt)) {
-                    this.points.splice(point, 1);
+        var sPts = this.superPoints;
+        this.points = this.points.filter(function(el) {
+            for (let sPt of sPts) {
+                if (sPt.equals(el)) {
+                    return false;
                 }
             }
-        }
+            return true;
+        });
     }
 
     getNeighbors(triangle) {
