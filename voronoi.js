@@ -291,6 +291,10 @@ class Voronoi {
             });
         }
 
+        /*
+        This does a depth first search to connect all the circumcenters
+        together.
+        */
         var stack = [this.triangles[0]]; // Triangles
         var visited = new Set(); // Edges
         while (stack.length != 0) { // Inner voronoi edges
@@ -299,6 +303,7 @@ class Voronoi {
             for (let neighbor of neighbors) {
                 var voronoiEdge = new Edge(neighbor.center, triangle.center);
                 if (!this.setHasEdge(visited, voronoiEdge)) {
+                    // If the edge hasn't been seen before
                     visited.add(voronoiEdge);
                     stack.push(neighbor);
                     c.drawLine({
@@ -313,6 +318,10 @@ class Voronoi {
             }
         }
 
+        /*
+            The above code cannot add voronoi edges when there is no neighbor
+            i.e. an edge that goes off screen. The following implements that.
+        */
         for (let tri of this.triangles) {
             var neighbors = this.getNeighbors(tri);
             var edgesToDrawToBorder = [];
@@ -337,6 +346,13 @@ class Voronoi {
                         });
                     }
                 }
+                /*
+                edgesToDrawToBorder is now a list of all edges where
+                voronoi edges must be used. If you take the perpendicular
+                slope of this edge and draw from the edge of the screen to
+                the circumcenter of the triangle, the voronoi diagram will
+                be complete.
+                */
                 for (let edgeToDraw of edgesToDrawToBorder) {
                     c.drawLine({
                         strokeStyle: 'red',
@@ -349,6 +365,8 @@ class Voronoi {
                 }
             }
         }
+
+        // Draw vertices
         for (let p of this.points) {
             c.drawArc({
                 strokeStyle: 'steelBlue',
