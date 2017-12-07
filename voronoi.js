@@ -268,17 +268,8 @@ class Voronoi {
     }
 
     draw(c) {
-        for (let p of this.points) {
-            c.drawArc({
-                strokeStyle: 'steelBlue',
-                strokeStyle: 'blue',
-                strokeWidth: 4,
-                x: p.x, y: p.y,
-                radius: 2
-            });
-        }
 
-        /*for (let tri of this.triangles) {
+        for (let tri of this.triangles) {
             c.drawLine({
                 strokeStyle: 'steelBlue',
                 strokeWidth: 4,
@@ -288,7 +279,7 @@ class Voronoi {
                 closed: true,
                 rounded: true
             });
-        }*/
+        }
 
         // Draw circumcircles
         for (let triangle of this.triangles) {
@@ -357,6 +348,15 @@ class Voronoi {
                     });
                 }
             }
+        }
+        for (let p of this.points) {
+            c.drawArc({
+                strokeStyle: 'steelBlue',
+                strokeStyle: 'blue',
+                strokeWidth: 4,
+                x: p.x, y: p.y,
+                radius: 2
+            });
         }
     }
 }

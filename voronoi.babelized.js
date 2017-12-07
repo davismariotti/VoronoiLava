@@ -570,19 +570,10 @@ var Voronoi = function () {
             var _iteratorError13 = undefined;
 
             try {
-                for (var _iterator13 = this.points[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
-                    var p = _step13.value;
 
-                    c.drawArc({
-                        strokeStyle: 'steelBlue',
-                        strokeStyle: 'blue',
-                        strokeWidth: 4,
-                        x: p.x, y: p.y,
-                        radius: 2
-                    });
-                }
+                for (var _iterator13 = this.triangles[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+                    var tri = _step13.value;
 
-                /*for (let tri of this.triangles) {
                     c.drawLine({
                         strokeStyle: 'steelBlue',
                         strokeWidth: 4,
@@ -592,7 +583,7 @@ var Voronoi = function () {
                         closed: true,
                         rounded: true
                     });
-                }*/
+                }
 
                 // Draw circumcircles
             } catch (err) {
@@ -690,43 +681,43 @@ var Voronoi = function () {
 
             try {
                 for (var _iterator16 = this.triangles[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
-                    var tri = _step16.value;
+                    var _tri2 = _step16.value;
 
-                    var neighbors = this.getNeighbors(tri);
+                    var neighbors = this.getNeighbors(_tri2);
                     var edgesToDrawToBorder = [];
                     if (neighbors.length < 3) {
-                        var _iteratorNormalCompletion17 = true;
-                        var _didIteratorError17 = false;
-                        var _iteratorError17 = undefined;
+                        var _iteratorNormalCompletion18 = true;
+                        var _didIteratorError18 = false;
+                        var _iteratorError18 = undefined;
 
                         try {
-                            for (var _iterator17 = tri.edges[Symbol.iterator](), _step17; !(_iteratorNormalCompletion17 = (_step17 = _iterator17.next()).done); _iteratorNormalCompletion17 = true) {
-                                var edge = _step17.value;
+                            for (var _iterator18 = _tri2.edges[Symbol.iterator](), _step18; !(_iteratorNormalCompletion18 = (_step18 = _iterator18.next()).done); _iteratorNormalCompletion18 = true) {
+                                var edge = _step18.value;
 
                                 var neighborEdge = false;
-                                var _iteratorNormalCompletion19 = true;
-                                var _didIteratorError19 = false;
-                                var _iteratorError19 = undefined;
+                                var _iteratorNormalCompletion20 = true;
+                                var _didIteratorError20 = false;
+                                var _iteratorError20 = undefined;
 
                                 try {
-                                    for (var _iterator19 = neighbors[Symbol.iterator](), _step19; !(_iteratorNormalCompletion19 = (_step19 = _iterator19.next()).done); _iteratorNormalCompletion19 = true) {
-                                        var _neighbor = _step19.value;
+                                    for (var _iterator20 = neighbors[Symbol.iterator](), _step20; !(_iteratorNormalCompletion20 = (_step20 = _iterator20.next()).done); _iteratorNormalCompletion20 = true) {
+                                        var _neighbor = _step20.value;
 
                                         if (_neighbor.containsEdge(edge)) {
                                             neighborEdge = true;
                                         }
                                     }
                                 } catch (err) {
-                                    _didIteratorError19 = true;
-                                    _iteratorError19 = err;
+                                    _didIteratorError20 = true;
+                                    _iteratorError20 = err;
                                 } finally {
                                     try {
-                                        if (!_iteratorNormalCompletion19 && _iterator19.return) {
-                                            _iterator19.return();
+                                        if (!_iteratorNormalCompletion20 && _iterator20.return) {
+                                            _iterator20.return();
                                         }
                                     } finally {
-                                        if (_didIteratorError19) {
-                                            throw _iteratorError19;
+                                        if (_didIteratorError20) {
+                                            throw _iteratorError20;
                                         }
                                     }
                                 }
@@ -745,38 +736,6 @@ var Voronoi = function () {
                                 }
                             }
                         } catch (err) {
-                            _didIteratorError17 = true;
-                            _iteratorError17 = err;
-                        } finally {
-                            try {
-                                if (!_iteratorNormalCompletion17 && _iterator17.return) {
-                                    _iterator17.return();
-                                }
-                            } finally {
-                                if (_didIteratorError17) {
-                                    throw _iteratorError17;
-                                }
-                            }
-                        }
-
-                        var _iteratorNormalCompletion18 = true;
-                        var _didIteratorError18 = false;
-                        var _iteratorError18 = undefined;
-
-                        try {
-                            for (var _iterator18 = edgesToDrawToBorder[Symbol.iterator](), _step18; !(_iteratorNormalCompletion18 = (_step18 = _iterator18.next()).done); _iteratorNormalCompletion18 = true) {
-                                var edgeToDraw = _step18.value;
-
-                                c.drawLine({
-                                    strokeStyle: 'red',
-                                    strokeWidth: 4,
-                                    x1: edgeToDraw.midpoint.x, y1: edgeToDraw.midpoint.y,
-                                    x2: tri.center.x, y2: tri.center.y,
-                                    closed: true,
-                                    rounded: true
-                                });
-                            }
-                        } catch (err) {
                             _didIteratorError18 = true;
                             _iteratorError18 = err;
                         } finally {
@@ -787,6 +746,38 @@ var Voronoi = function () {
                             } finally {
                                 if (_didIteratorError18) {
                                     throw _iteratorError18;
+                                }
+                            }
+                        }
+
+                        var _iteratorNormalCompletion19 = true;
+                        var _didIteratorError19 = false;
+                        var _iteratorError19 = undefined;
+
+                        try {
+                            for (var _iterator19 = edgesToDrawToBorder[Symbol.iterator](), _step19; !(_iteratorNormalCompletion19 = (_step19 = _iterator19.next()).done); _iteratorNormalCompletion19 = true) {
+                                var edgeToDraw = _step19.value;
+
+                                c.drawLine({
+                                    strokeStyle: 'red',
+                                    strokeWidth: 4,
+                                    x1: edgeToDraw.midpoint.x, y1: edgeToDraw.midpoint.y,
+                                    x2: _tri2.center.x, y2: _tri2.center.y,
+                                    closed: true,
+                                    rounded: true
+                                });
+                            }
+                        } catch (err) {
+                            _didIteratorError19 = true;
+                            _iteratorError19 = err;
+                        } finally {
+                            try {
+                                if (!_iteratorNormalCompletion19 && _iterator19.return) {
+                                    _iterator19.return();
+                                }
+                            } finally {
+                                if (_didIteratorError19) {
+                                    throw _iteratorError19;
                                 }
                             }
                         }
@@ -803,6 +794,37 @@ var Voronoi = function () {
                 } finally {
                     if (_didIteratorError16) {
                         throw _iteratorError16;
+                    }
+                }
+            }
+
+            var _iteratorNormalCompletion17 = true;
+            var _didIteratorError17 = false;
+            var _iteratorError17 = undefined;
+
+            try {
+                for (var _iterator17 = this.points[Symbol.iterator](), _step17; !(_iteratorNormalCompletion17 = (_step17 = _iterator17.next()).done); _iteratorNormalCompletion17 = true) {
+                    var p = _step17.value;
+
+                    c.drawArc({
+                        strokeStyle: 'steelBlue',
+                        strokeStyle: 'blue',
+                        strokeWidth: 4,
+                        x: p.x, y: p.y,
+                        radius: 2
+                    });
+                }
+            } catch (err) {
+                _didIteratorError17 = true;
+                _iteratorError17 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion17 && _iterator17.return) {
+                        _iterator17.return();
+                    }
+                } finally {
+                    if (_didIteratorError17) {
+                        throw _iteratorError17;
                     }
                 }
             }
