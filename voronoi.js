@@ -1,3 +1,5 @@
+const EPSILON = 0.000000001;
+
 class Triangle {
     constructor(p1, p2, p3) {
         this.p1 = p1;
@@ -12,12 +14,14 @@ class Triangle {
         return pt.distanceTo(this.center) < this.rad;
     }
 
-    shareVertex(t) {
-        return (
-            t.p1 == this.p1 || t.p1 == this.p2 || t.p1 == this.p3 ||
-            t.p2 == this.p1 || t.p2 == this.p2 || t.p2 == this.p3 ||
-            t.p3 == this.p1 || t.p3 == this.p2 || t.p3 == this.p3
-        );
+    containsPoint(point) {
+        return point.equals(this.p1) || point.equals(this.p2) || point.equals(this.p3);
+    }
+
+    sharesVertex(t) {
+        return t.p1.equals(this.p1) || t.p1.equals(this.p2) || t.p1.equals(this.p3) ||
+               t.p2.equals(this.p1) || t.p2.equals(this.p2) || t.p2.equals(this.p3) ||
+               t.p3.equals(this.p1) || t.p3.equals(this.p2) || t.p3.equals(this.p3);
     }
 
     circumcircle() {
@@ -48,7 +52,7 @@ class Point {
     }
 
     equals(p) {
-        return p.x == this.x && p.y == this.y;
+        return Math.abs(p.x - this.x) < EPSILON && Math.abs(p.y - this.y);
     }
 
     distanceTo(pt) {
@@ -194,7 +198,7 @@ class Voronoi {
         for (let tri of this.triangles) {
             let sharesVertex = false;
             for (let sTri of this.superTriangles) {
-                if (sTri.shareVertex(tri)) {
+                if (sTri.sharesVertex(tri)) {
                     sharesVertex = true;
                     break;
                 }
@@ -238,6 +242,17 @@ class Voronoi {
                 rounded: true
             });
         }
+        // Draw circumcircles
+
+        for (let triangle of this.triangles) {
+            c.drawArc({
+                strokeStyle: 'red',
+                strokeWidth: 4,
+                x: triangle.center.x, y: triangle.center.y,
+                radius: 1
+            });
+        }
+
         for (let i = 0; i < this.triangles.length-1; i++) {
             let t1 = this.triangles[i];
             let t2 = this.triangles[i+1];
