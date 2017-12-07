@@ -2,8 +2,6 @@
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Triangle = function () {
@@ -135,6 +133,7 @@ var Voronoi = function () {
         this.points = points;
         this.triangles = [];
         this.superTriangles = [];
+        this.superPoints = [];
         this._tris = [];
     }
 
@@ -147,7 +146,16 @@ var Voronoi = function () {
                 this.addVertex(i);
             }
 
-            var mTriangles = [];
+            this.removeSuperTriangles();
+        }
+    }, {
+        key: 'addVertex',
+        value: function addVertex(pIdx) {
+            var pt = this.points[pIdx];
+            console.log('POINT', pt);
+
+            // Find all triangles containing pt in circumcircle
+            var circTriangles = [];
             var _iteratorNormalCompletion2 = true;
             var _didIteratorError2 = false;
             var _iteratorError2 = undefined;
@@ -156,39 +164,14 @@ var Voronoi = function () {
                 for (var _iterator2 = this.triangles[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                     var tri = _step2.value;
 
-                    var sharesVertex = false;
-                    var _iteratorNormalCompletion3 = true;
-                    var _didIteratorError3 = false;
-                    var _iteratorError3 = undefined;
-
-                    try {
-                        for (var _iterator3 = this.superTriangles[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                            var sTri = _step3.value;
-
-                            if (sTri.shareVertex(tri)) {
-                                sharesVertex = true;
-                                break;
-                            }
-                        }
-                    } catch (err) {
-                        _didIteratorError3 = true;
-                        _iteratorError3 = err;
-                    } finally {
-                        try {
-                            if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                                _iterator3.return();
-                            }
-                        } finally {
-                            if (_didIteratorError3) {
-                                throw _iteratorError3;
-                            }
-                        }
-                    }
-
-                    if (!sharesVertex) {
-                        mTriangles.push(tri);
+                    console.log('TRIANGLE', tri);
+                    console.log('CIRCUMSCRIBES', tri.circumscribes(pt));
+                    if (tri.circumscribes(pt)) {
+                        circTriangles.push(tri);
                     }
                 }
+
+                // Remove all triangles containing pt in circumcircle
             } catch (err) {
                 _didIteratorError2 = true;
                 _iteratorError2 = err;
@@ -204,32 +187,58 @@ var Voronoi = function () {
                 }
             }
 
-            this.triangles = mTriangles;
-        }
-    }, {
-        key: 'addVertex',
-        value: function addVertex(pIdx) {
-            var pt = this.points[pIdx];
-            console.log('POINT', pt);
+            this.triangles = this.triangles.filter(function (_tri) {
+                return circTriangles.indexOf(_tri) == -1;
+            });
 
-            // Find all triangles containing pt in circumcircle
-            var circTriangles = [];
+            var edgeBuffer = [];
+            var _iteratorNormalCompletion3 = true;
+            var _didIteratorError3 = false;
+            var _iteratorError3 = undefined;
+
+            try {
+                for (var _iterator3 = circTriangles[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                    var t = _step3.value;
+
+                    edgeBuffer.push(new Edge(t.p1, t.p2), new Edge(t.p2, t.p3), new Edge(t.p3, t.p1));
+                }
+            } catch (err) {
+                _didIteratorError3 = true;
+                _iteratorError3 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                        _iterator3.return();
+                    }
+                } finally {
+                    if (_didIteratorError3) {
+                        throw _iteratorError3;
+                    }
+                }
+            }
+
+            console.log('edgeBuffer', edgeBuffer);
+
+            var uniqueEdges = [];
+            for (var i = 0; i < edgeBuffer.length; i++) {
+                if (edgeBuffer[i].isUniqueIn(edgeBuffer)) {
+                    uniqueEdges.push(edgeBuffer[i]);
+                }
+            }
+
+            console.log('edgeBuffer UPDATED', edgeBuffer);
+
             var _iteratorNormalCompletion4 = true;
             var _didIteratorError4 = false;
             var _iteratorError4 = undefined;
 
             try {
-                for (var _iterator4 = this.triangles[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                    var tri = _step4.value;
+                for (var _iterator4 = uniqueEdges[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                    var e = _step4.value;
 
-                    console.log('TRIANGLE', tri);
-                    console.log('CIRCUMSCRIBES', tri.circumscribes(pt));
-                    if (tri.circumscribes(pt)) {
-                        circTriangles.push(tri);
-                    }
+                    this.triangles.push(new Triangle(pt, e.pt1, e.pt2));
+                    this._tris.push(new Triangle(pt, e.pt1, e.pt2));
                 }
-
-                // Remove all triangles containing pt in circumcircle
             } catch (err) {
                 _didIteratorError4 = true;
                 _iteratorError4 = err;
@@ -244,21 +253,68 @@ var Voronoi = function () {
                     }
                 }
             }
+        }
+    }, {
+        key: 'generateSuperTriangles',
+        value: function generateSuperTriangles() {
+            var p1 = new Point(-0.1, -0.1);
+            var p2 = new Point(C_WIDTH + 0.1, -0.1);
+            var p3 = new Point(-0.1, C_HEIGHT + 0.1);
+            var p4 = new Point(C_WIDTH + 0.1, C_HEIGHT + 0.1);
 
-            this.triangles = this.triangles.filter(function (_tri) {
-                return circTriangles.indexOf(_tri) == -1;
-            });
+            this.points.push(p1, p2, p3, p4);
+            this.superPoints.push(p1, p2, p3, p4);
 
-            var edgeBuffer = [];
+            var t1 = new Triangle(p1, p2, p4);
+            var t2 = new Triangle(p1, p3, p4);
+
+            this.triangles.push(t1, t2);
+            return [t1, t2];
+        }
+    }, {
+        key: 'removeSuperTriangles',
+        value: function removeSuperTriangles() {
+            var mTriangles = [];
             var _iteratorNormalCompletion5 = true;
             var _didIteratorError5 = false;
             var _iteratorError5 = undefined;
 
             try {
-                for (var _iterator5 = circTriangles[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                    var t = _step5.value;
+                for (var _iterator5 = this.triangles[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                    var tri = _step5.value;
 
-                    edgeBuffer.push(new Edge(t.p1, t.p2), new Edge(t.p2, t.p3), new Edge(t.p3, t.p1));
+                    var sharesVertex = false;
+                    var _iteratorNormalCompletion7 = true;
+                    var _didIteratorError7 = false;
+                    var _iteratorError7 = undefined;
+
+                    try {
+                        for (var _iterator7 = this.superTriangles[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+                            var sTri = _step7.value;
+
+                            if (sTri.shareVertex(tri)) {
+                                sharesVertex = true;
+                                break;
+                            }
+                        }
+                    } catch (err) {
+                        _didIteratorError7 = true;
+                        _iteratorError7 = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                                _iterator7.return();
+                            }
+                        } finally {
+                            if (_didIteratorError7) {
+                                throw _iteratorError7;
+                            }
+                        }
+                    }
+
+                    if (!sharesVertex) {
+                        mTriangles.push(tri);
+                    }
                 }
             } catch (err) {
                 _didIteratorError5 = true;
@@ -275,59 +331,103 @@ var Voronoi = function () {
                 }
             }
 
-            console.log('edgeBuffer', edgeBuffer);
+            this.triangles = mTriangles;
 
-            var uniqueEdges = [];
-            for (var i = 0; i < edgeBuffer.length; i++) {
-                if (edgeBuffer[i].isUniqueIn(edgeBuffer)) {
-                    uniqueEdges.push(edgeBuffer[i]);
-                }
-            }
+            for (var point in this.points) {
+                var _iteratorNormalCompletion6 = true;
+                var _didIteratorError6 = false;
+                var _iteratorError6 = undefined;
 
-            console.log('edgeBuffer UPDATED', edgeBuffer);
-
-            var _iteratorNormalCompletion6 = true;
-            var _didIteratorError6 = false;
-            var _iteratorError6 = undefined;
-
-            try {
-                for (var _iterator6 = uniqueEdges[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-                    var e = _step6.value;
-
-                    this.triangles.push(new Triangle(pt, e.pt1, e.pt2));
-                    this._tris.push(new Triangle(pt, e.pt1, e.pt2));
-                }
-            } catch (err) {
-                _didIteratorError6 = true;
-                _iteratorError6 = err;
-            } finally {
                 try {
-                    if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                        _iterator6.return();
+                    for (var _iterator6 = this.superPoints[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                        var sPt = _step6.value;
+
+                        if (this.points[point].equals(sPt)) {
+                            this.points.splice(point, 1);
+                        }
                     }
+                } catch (err) {
+                    _didIteratorError6 = true;
+                    _iteratorError6 = err;
                 } finally {
-                    if (_didIteratorError6) {
-                        throw _iteratorError6;
+                    try {
+                        if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                            _iterator6.return();
+                        }
+                    } finally {
+                        if (_didIteratorError6) {
+                            throw _iteratorError6;
+                        }
                     }
                 }
             }
         }
     }, {
-        key: 'generateSuperTriangles',
-        value: function generateSuperTriangles() {
-            var p1 = new Point(-0.1, -0.1);
-            var p2 = new Point(C_WIDTH + 0.1, -0.1);
-            var p3 = new Point(-0.1, C_HEIGHT + 0.1);
-            var p4 = new Point(C_WIDTH + 0.1, C_HEIGHT + 0.1);
+        key: 'draw',
+        value: function draw(c) {
+            var _iteratorNormalCompletion8 = true;
+            var _didIteratorError8 = false;
+            var _iteratorError8 = undefined;
 
-            this.points.push(p1, p2, p3, p4);
+            try {
+                for (var _iterator8 = this.points[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+                    var p = _step8.value;
 
-            var t1 = new Triangle(p1, p2, p4);
-            var t2 = new Triangle(p1, p3, p4);
+                    c.drawArc({
+                        strokeStyle: 'steelBlue',
+                        strokeStyle: 'blue',
+                        strokeWidth: 4,
+                        x: p.x, y: p.y,
+                        radius: 2
+                    });
+                }
+            } catch (err) {
+                _didIteratorError8 = true;
+                _iteratorError8 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion8 && _iterator8.return) {
+                        _iterator8.return();
+                    }
+                } finally {
+                    if (_didIteratorError8) {
+                        throw _iteratorError8;
+                    }
+                }
+            }
 
-            this.triangles.push(t1, t2);
+            var _iteratorNormalCompletion9 = true;
+            var _didIteratorError9 = false;
+            var _iteratorError9 = undefined;
 
-            return [t1, t2];
+            try {
+                for (var _iterator9 = this.triangles[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+                    var tri = _step9.value;
+
+                    c.drawLine({
+                        strokeStyle: 'steelBlue',
+                        strokeWidth: 4,
+                        x1: tri.p1.x, y1: tri.p1.y,
+                        x2: tri.p2.x, y2: tri.p2.y,
+                        x3: tri.p3.x, y3: tri.p3.y,
+                        closed: true,
+                        rounded: true
+                    });
+                }
+            } catch (err) {
+                _didIteratorError9 = true;
+                _iteratorError9 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion9 && _iterator9.return) {
+                        _iterator9.return();
+                    }
+                } finally {
+                    if (_didIteratorError9) {
+                        throw _iteratorError9;
+                    }
+                }
+            }
         }
     }]);
 
@@ -339,123 +439,34 @@ var C_WIDTH = 500;
 var C_HEIGHT = 500;
 
 $(function () {
-    var c = $("#canvas");
     var points = [];
 
-    for (var i = 0; i < pNum; i++) {
-        points.push(new Point(Math.random() * C_WIDTH, Math.random() * C_HEIGHT));
-    }
+    // for (var i = 0; i < pNum; i++) {
+    //   points.push(new Point(Math.random() * C_WIDTH, Math.random() * C_HEIGHT));
+    // }
+    //console.log(v);
 
-    var v = new Voronoi(points);
 
-    v.generate();
-    console.log(v);
+    $("#canvas").click(function (event) {
+        var $canvas = $("#canvas");
+        $canvas.clearCanvas();
+        var x = event.offsetX;
+        var y = event.offsetY;
+        points.push(new Point(x, y));
+        //console.log(points);
 
-    var _iteratorNormalCompletion7 = true;
-    var _didIteratorError7 = false;
-    var _iteratorError7 = undefined;
+        // $canvas.drawArc({
+        //     strokeStyle: 'steelBlue',
+        //     strokeStyle: 'blue',
+        //     strokeWidth: 4,
+        //     x: x, y: y,
+        //     radius: 1
+        // });
 
-    try {
-        for (var _iterator7 = v.points[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-            var _c$drawArc;
-
-            var p = _step7.value;
-
-            c.drawArc((_c$drawArc = {
-                strokeStyle: 'steelBlue'
-            }, _defineProperty(_c$drawArc, 'strokeStyle', 'blue'), _defineProperty(_c$drawArc, 'strokeWidth', 4), _defineProperty(_c$drawArc, 'x', p.x), _defineProperty(_c$drawArc, 'y', p.y), _defineProperty(_c$drawArc, 'radius', 2), _c$drawArc));
+        if (points.length >= 3) {
+            var v = new Voronoi(points);
+            v.generate();
+            v.draw($canvas);
         }
-    } catch (err) {
-        _didIteratorError7 = true;
-        _iteratorError7 = err;
-    } finally {
-        try {
-            if (!_iteratorNormalCompletion7 && _iterator7.return) {
-                _iterator7.return();
-            }
-        } finally {
-            if (_didIteratorError7) {
-                throw _iteratorError7;
-            }
-        }
-    }
-
-    var _iteratorNormalCompletion8 = true;
-    var _didIteratorError8 = false;
-    var _iteratorError8 = undefined;
-
-    try {
-        for (var _iterator8 = v.triangles[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-            var tri = _step8.value;
-
-            c.drawLine({
-                strokeStyle: 'steelBlue',
-                strokeWidth: 4,
-                x1: tri.p1.x, y1: tri.p1.y,
-                x2: tri.p2.x, y2: tri.p2.y,
-                x3: tri.p3.x, y3: tri.p3.y,
-                closed: true,
-                rounded: true
-            });
-        }
-
-        /*$("#canvas").click(function(event) {
-            var $canvas = $("#canvas");
-            var x = event.offsetX;
-            var y = event.offsetY;
-            console.log(x);
-            console.log(x);
-            points.push(new Point(x, y));
-            console.log(points);
-             $canvas.drawArc({
-                strokeStyle: 'steelBlue',
-                strokeStyle: 'blue',
-                strokeWidth: 4,
-                x: x, y: y,
-                radius: 1
-            });
-             if (points.length == 3) {
-                 let tri = new Triangle(points[0], points[1], points[2]);
-                 console.log('test');
-                $canvas.drawLine({
-                    strokeStyle: 'steelBlue',
-                    strokeWidth: 4,
-                    x1: points[0].x, y1: points[0].y,
-                    x2: points[1].x, y2: points[1].y,
-                    x3: points[2].x, y3: points[2].y,
-                    closed: true,
-                    rounded: true
-                });
-                console.log(tri);
-                $canvas.drawArc({
-                    strokeStyle: 'steelBlue',
-                    strokeStyle: 'blue',
-                    strokeWidth: 4,
-                    x: tri.center.x, y: tri.center.y,
-                    radius: tri.rad
-                });
-                $canvas.drawArc({
-                    strokeStyle: 'steelBlue',
-                    strokeStyle: 'blue',
-                    strokeWidth: 4,
-                    x: tri.center.x, y: tri.center.y,
-                    radius: 1
-                });
-            }
-               //triangulate();
-        });*/
-    } catch (err) {
-        _didIteratorError8 = true;
-        _iteratorError8 = err;
-    } finally {
-        try {
-            if (!_iteratorNormalCompletion8 && _iterator8.return) {
-                _iterator8.return();
-            }
-        } finally {
-            if (_didIteratorError8) {
-                throw _iteratorError8;
-            }
-        }
-    }
+    });
 });

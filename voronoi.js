@@ -83,6 +83,7 @@ class Voronoi {
         this.points = points;
         this.triangles = [];
         this.superTriangles = [];
+        this.superPoints = []
         this._tris = [];
     }
 
@@ -92,22 +93,8 @@ class Voronoi {
         for (let i = 0; i < this.points.length; i++) {
             this.addVertex(i);
         }
-        
-        let mTriangles = [];
-        for (let tri of this.triangles) {
-            let sharesVertex = false;
-            for (let sTri of this.superTriangles) {
-                if (sTri.shareVertex(tri)) {
-                    sharesVertex = true;
-                    break;
-                }
-            }
-            
-            if (!sharesVertex) {
-                mTriangles.push(tri);
-            }
-        }
-        this.triangles = mTriangles;
+
+        this.removeSuperTriangles();
     }
 
     addVertex(pIdx) {
@@ -162,13 +149,64 @@ class Voronoi {
         let p4 = new Point(C_WIDTH + 0.1, C_HEIGHT + 0.1);
 
         this.points.push(p1, p2, p3, p4);
+        this.superPoints.push(p1, p2, p3, p4);
 
         let t1 = new Triangle(p1, p2, p4);
         let t2 = new Triangle(p1, p3, p4);
 
         this.triangles.push(t1, t2);
-
         return [t1, t2];
+    }
+
+    removeSuperTriangles() {
+        let mTriangles = [];
+        for (let tri of this.triangles) {
+            let sharesVertex = false;
+            for (let sTri of this.superTriangles) {
+                if (sTri.shareVertex(tri)) {
+                    sharesVertex = true;
+                    break;
+                }
+            }
+
+            if (!sharesVertex) {
+                mTriangles.push(tri);
+            }
+        }
+        this.triangles = mTriangles;
+
+
+        for (var point in this.points) {
+            for (var sPt of this.superPoints) {
+                if (this.points[point].equals(sPt)) {
+                    this.points.splice(point, 1);
+                }
+            }
+        }
+    }
+
+    draw(c) {
+        for (let p of this.points) {
+            c.drawArc({
+                strokeStyle: 'steelBlue',
+                strokeStyle: 'blue',
+                strokeWidth: 4,
+                x: p.x, y: p.y,
+                radius: 2
+            });
+        }
+
+        for (let tri of this.triangles) {
+            c.drawLine({
+                strokeStyle: 'steelBlue',
+                strokeWidth: 4,
+                x1: tri.p1.x, y1: tri.p1.y,
+                x2: tri.p2.x, y2: tri.p2.y,
+                x3: tri.p3.x, y3: tri.p3.y,
+                closed: true,
+                rounded: true
+            });
+        }
     }
 }
 
@@ -177,90 +215,35 @@ const C_WIDTH = 500;
 const C_HEIGHT = 500;
 
 $(function() {
-    var c = $("#canvas");
     let points = [];
 
-    for (var i = 0; i < pNum; i++) {
-      points.push(new Point(Math.random() * C_WIDTH, Math.random() * C_HEIGHT));
-    }
+    // for (var i = 0; i < pNum; i++) {
+    //   points.push(new Point(Math.random() * C_WIDTH, Math.random() * C_HEIGHT));
+    // }
+    //console.log(v);
 
-    let v = new Voronoi(points);
 
-    v.generate();
-    console.log(v);
 
-    for (let p of v.points) {
-        c.drawArc({
-            strokeStyle: 'steelBlue',
-            strokeStyle: 'blue',
-            strokeWidth: 4,
-            x: p.x, y: p.y,
-            radius: 2
-        });
-    }
-
-    for (let tri of v.triangles) {
-        c.drawLine({
-            strokeStyle: 'steelBlue',
-            strokeWidth: 4,
-            x1: tri.p1.x, y1: tri.p1.y,
-            x2: tri.p2.x, y2: tri.p2.y,
-            x3: tri.p3.x, y3: tri.p3.y,
-            closed: true,
-            rounded: true
-        });
-    }
-
-    /*$("#canvas").click(function(event) {
+    $("#canvas").click(function(event) {
         var $canvas = $("#canvas");
+        $canvas.clearCanvas();
         var x = event.offsetX;
         var y = event.offsetY;
-        console.log(x);
-        console.log(x);
         points.push(new Point(x, y));
-        console.log(points);
+        //console.log(points);
 
-        $canvas.drawArc({
-            strokeStyle: 'steelBlue',
-            strokeStyle: 'blue',
-            strokeWidth: 4,
-            x: x, y: y,
-            radius: 1
-        });
+        // $canvas.drawArc({
+        //     strokeStyle: 'steelBlue',
+        //     strokeStyle: 'blue',
+        //     strokeWidth: 4,
+        //     x: x, y: y,
+        //     radius: 1
+        // });
 
-        if (points.length == 3) {
-
-            let tri = new Triangle(points[0], points[1], points[2]);
-
-            console.log('test');
-            $canvas.drawLine({
-                strokeStyle: 'steelBlue',
-                strokeWidth: 4,
-                x1: points[0].x, y1: points[0].y,
-                x2: points[1].x, y2: points[1].y,
-                x3: points[2].x, y3: points[2].y,
-                closed: true,
-                rounded: true
-            });
-            console.log(tri);
-            $canvas.drawArc({
-                strokeStyle: 'steelBlue',
-                strokeStyle: 'blue',
-                strokeWidth: 4,
-                x: tri.center.x, y: tri.center.y,
-                radius: tri.rad
-            });
-            $canvas.drawArc({
-                strokeStyle: 'steelBlue',
-                strokeStyle: 'blue',
-                strokeWidth: 4,
-                x: tri.center.x, y: tri.center.y,
-                radius: 1
-            });
+        if (points.length >= 3) {
+            let v = new Voronoi(points);
+            v.generate();
+            v.draw($canvas);
         }
-
-
-
-        //triangulate();
-    });*/
+    });
 });
