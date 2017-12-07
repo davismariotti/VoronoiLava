@@ -105,7 +105,6 @@ class Voronoi {
         this.superTriangles = [];
         this.superPoints = []
         this._tris = [];
-
     }
 
     generate() {
@@ -236,6 +235,16 @@ class Voronoi {
         }
     }
 
+    getNeighbors(triangle) {
+        var tris = [];
+        for (let tri of this.triangles) {
+            if (tri.sharesEdge(triange)) {
+                tris.push(tri);
+            }
+        }
+        return tris;
+    }
+
     draw(c) {
         for (let p of this.points) {
             c.drawArc({
@@ -258,8 +267,8 @@ class Voronoi {
                 rounded: true
             });
         }
-        // Draw circumcircles
 
+        // Draw circumcircles
         for (let triangle of this.triangles) {
             c.drawArc({
                 strokeStyle: 'red',
@@ -302,11 +311,6 @@ $(function() {
     //   points.push(new Point(Math.random() * C_WIDTH, Math.random() * C_HEIGHT));
     // }
     //console.log(v);
-
-
-
-
-
     $("#canvas").click(function(event) {
         var $canvas = $("#canvas");
         $canvas.clearCanvas();
