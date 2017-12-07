@@ -292,7 +292,7 @@ class Voronoi {
         }
 
         /*
-        This does a depth first search to connect all the circumcenters
+        This does a depth first traversal to connect all the circumcenters
         together.
         */
         var stack = [this.triangles[0]]; // Triangles
