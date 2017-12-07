@@ -84,6 +84,7 @@ class Voronoi {
         this.triangles = [];
         this.superTriangles = [];
         this._tris = [];
+        
     }
 
     generate() {
@@ -108,6 +109,35 @@ class Voronoi {
             }
         }
         this.triangles = mTriangles;
+        this.points = this.points.slice(0, this.points.length-4);
+        
+        let ptToTri = {};
+        for (let t of this.triangles) {
+            ptToTri[t.pt1] = t;
+            ptToTri[t.pt2] = t;
+            ptToTri[t.pt3] = t;
+        }
+        
+        let ptNeighbors = {};
+        for (let pt of this.points) {
+            let _triangles  = ptToTri[pt];
+            let neighbors = new Set();
+            if (_triangles != null) {
+                for (let j = 0; j < _triangles.length; j++) {
+                    let t = _triangles[j];
+                    if (t.pt1 != pt) {
+                        neighbors.add(t.pt1);
+                    }
+                    if (t.pt2 != pt) {
+                        neighbors.add(t.pt2);
+                    }
+                    if (t.pt3 != pt) {
+                        neighbors.add(t.pt3);
+                    }
+                }
+            }
+            ptNeighbors[pt] = neighbors;
+        }
     }
 
     addVertex(pIdx) {
@@ -199,15 +229,24 @@ $(function() {
         });
     }
 
-    for (let tri of v.triangles) {
+    for (let i = 0; i < v.triangles.length-1; i++) {
+        let t1 = v.triangles[i];
+        let t2 = v.triangles[i+1];
         c.drawLine({
             strokeStyle: 'steelBlue',
             strokeWidth: 4,
-            x1: tri.p1.x, y1: tri.p1.y,
-            x2: tri.p2.x, y2: tri.p2.y,
-            x3: tri.p3.x, y3: tri.p3.y,
+            x1: t1.center.x, y1: t1.center.y,
+            x2: t2.center.x, y2: t2.center.y,
             closed: true,
             rounded: true
+        });
+        
+        c.drawArc({
+            strokeStyle: 'steelBlue',
+            strokeStyle: 'blue',
+            strokeWidth: 4,
+            x: t1.center.x, y: t1.center.y,
+            radius: 2
         });
     }
 
