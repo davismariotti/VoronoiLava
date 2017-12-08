@@ -1,5 +1,12 @@
 const EPSILON = 0.000000001;
 
+
+function areaOfTriangle(p1, p2, p3) {
+    return Math.abs((p1.x * (p2.y - p3.y) +
+                     p2.x * (p3.y - p1.y) +
+                     p3.x * (p1.y - p2.y)) / 2.0);
+}
+
 class Triangle {
     constructor(p1, p2, p3) {
         this.p1 = p1;
@@ -15,7 +22,7 @@ class Triangle {
         return pt.distanceTo(this.center) < this.rad;
     }
 
-    containsPoint(point) {
+    containsVertex(point) {
         return point.equals(this.p1) || point.equals(this.p2) || point.equals(this.p3);
     }
 
@@ -23,6 +30,14 @@ class Triangle {
         return (this.edges[0].equals(edge)) ||
                (this.edges[1].equals(edge)) ||
                (this.edges[2].equals(edge));
+    }
+
+    containsPoint(point) {
+        var a = areaOfTriangle(this.p1, this.p2, this.p3);
+        var a1 = areaOfTriangle(point, this.p2, this.p3);
+        var a2 = areaOfTriangle(this.p1, point, this.p3);
+        var a3 = areaOfTriangle(this.p1, this.p2, point);
+        return a == (a1 + a2 + a3);
     }
 
     sharesVertex(t) {
@@ -38,6 +53,16 @@ class Triangle {
             }
         }
         return false;
+    }
+
+    minusEdge(edge) {
+        if (!edge.containsVertex(this.p1)) {
+            return this.p1;
+        } else if (!edge.containsVertex(this.p2)) {
+            return this.p2;
+        } else {
+            return this.p3;
+        }
     }
 
     equals(tri) {
@@ -93,7 +118,13 @@ class Edge {
     }
 
     slope() {
-        return (this.pt2.y - this.pt1.y) / (this.pt1.x - this.pt2.x);
+        return (this.pt2.y - this.pt1.y) / (this.pt2.x - this.pt1.x);
+    }
+
+    containsVertex(point) {
+
+        console.log("point", point);
+        return this.pt1.equals(point) || this.pt2.equals(point);
     }
 
     perpendicularSlope() {
