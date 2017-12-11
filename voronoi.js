@@ -104,6 +104,10 @@ class Point {
     distanceTo(pt) {
         return Math.sqrt((Math.pow(pt.x-this.x,2))+(Math.pow(pt.y-this.y,2)));
     };
+
+    jsonify() {
+        return {'x': this.x, 'y': this.y};
+    }
 }
 
 class Edge {
@@ -111,6 +115,10 @@ class Edge {
         this.pt1 = pt1;
         this.pt2 = pt2;
         this.midpoint = this.midpoint();
+    }
+
+    jsonify() {
+        return {'p1': this.pt1.jsonify(), 'p2': this.pt2.jsonify()};
     }
 
     midpoint() {
@@ -193,6 +201,62 @@ class Voronoi {
             }
             ptNeighbors[pt] = neighbors;
         }
+    }
+
+    edgeInArray(testEdge, arr) {
+        for (let edge of arr) {
+            if (testEdge.equals(edge)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    data() {
+        var output = {};
+        var triangleEdges = [];
+        var triangleEdgesTemp = [];
+        var voronoiEdges = [];
+        var pointsOut = [];
+
+        for (let point of this.points) {
+            pointsOut.push(point.jsonify());
+        }
+        output['points'] = pointsOut;
+
+        for (let triangle of this.triangles) {
+            for (let e of triangle.edges) {
+                if (!this.edgeInArray(e, triangleEdgesTemp)) {
+                    triangleEdgesTemp.push(e);
+                }
+            }
+        }
+
+        for (let edge of triangleEdgesTemp) {
+            triangleEdges.push(edge.jsonify());
+        }
+
+        output['triangulation'] = triangleEdges;
+
+        var stack = [this.triangles[0]]; // Triangles
+        var visited = new Set(); // Edges
+        while (stack.length != 0) { // Inner voronoi edges
+            var triangle = stack.pop();
+            var neighbors = this.getNeighbors(triangle);
+            for (let neighbor of neighbors) {
+                var voronoiEdge = new Edge(neighbor.center, triangle.center);
+                if (!this.setHasEdge(visited, voronoiEdge)) {
+                    // If the edge hasn't been seen before
+                    visited.add(voronoiEdge);
+                    stack.push(neighbor);
+                    voronoiEdges.push(new Edge(
+                        new Point(neighbor.center.x, neighbor.center.y),
+                        new Point(triangle.center.x, triangle.center.y)).jsonify());
+                }
+            }
+        }
+        output['voronoi'] = voronoiEdges;
+        return output;
     }
 
     addVertex(pIdx) {
@@ -368,7 +432,7 @@ class Voronoi {
                         edgesToDrawToBorder.push(edge);
 
                         c.drawLine({
-                            strokeStyle: 'purple',
+                            strokeStyle: 'steelBlue',
                             strokeWidth: 4,
                             x1: edge.pt1.x, y1: edge.pt1.y,
                             x2: edge.pt2.x, y2: edge.pt2.y,
@@ -376,23 +440,6 @@ class Voronoi {
                             rounded: true
                         });
                     }
-                }
-                /*
-                edgesToDrawToBorder is now a list of all edges where
-                voronoi edges must be used. If you take the perpendicular
-                slope of this edge and draw from the edge of the screen to
-                the circumcenter of the triangle, the voronoi diagram will
-                be complete.
-                */
-                for (let edgeToDraw of edgesToDrawToBorder) {
-                    c.drawLine({
-                        strokeStyle: 'red',
-                        strokeWidth: 4,
-                        x1: edgeToDraw.midpoint.x, y1: edgeToDraw.midpoint.y,
-                        x2: tri.center.x, y2: tri.center.y,
-                        closed: true,
-                        rounded: true
-                    });
                 }
             }
         }
@@ -432,6 +479,8 @@ $(function() {
             $canvas.clearCanvas();
             let v = new Voronoi(points);
             v.generate();
+            var data = v.data();
+            console.log(data);
             v.draw($canvas);
 
         } else {
