@@ -1,5 +1,6 @@
 const EPSILON = 0.000000001;
-
+const C_WIDTH = 1000;
+const C_HEIGHT = 700;
 
 function areaOfTriangle(p1, p2, p3) {
     return Math.abs((p1.x * (p2.y - p3.y) +
@@ -162,6 +163,7 @@ class Voronoi {
         this.superTriangles = [];
         this.superPoints = []
         this._tris = [];
+        this.generate();
     }
 
     generate() {
@@ -457,40 +459,186 @@ class Voronoi {
     }
 }
 
-let pNum = 10;
-const C_WIDTH = 1000;
-const C_HEIGHT = 700;
+class Demo {
+    constructor() {
+        this.voronoi = new Voronoi([]),
+        this.sites = [],
+        this.diagram = null,
+        this.margin = 0.15,
+        this.canvas = document.getElementById('canvas'),
+        this.bbox = {
+            xl: 0,
+            xr: 800,
+            yt: 0,
+            yb: 600
+        },
+        this.lavaRender = null
+    }
+    
+    runStatic() {
+        canvas.addEventListener('click',(e) => {
+            console.log(this.diagram);
+            this.sites.push(new Point(e.offsetX, e.offsetY));
+            this.recompute();
+            this.renderStatic();
+        }, false);
+        if (this.lavaRender) {
+            clearInterval(this.lavaRender);
+        }
+        // Generate random distribution of sites
+        //this.genRandomSites(20);
+        this.recompute();
+        this.renderStatic();
+    }
+    
+    runLavaSim() {
+        // Generate random distribution of sites
+        this.genRandomSites(20);
+        for (let site of this.sites) {
+            site.xv = Math.random() * 5;
+            site.yv = Math.random() * 2;
+            site.a = 1.0;
+        }
+        // Main render loop
+        this.lavaRender = setInterval(() => {
+            this.recompute();
+            this.renderLava();
+            // Update position and velocity for each point
+            for (let site of this.sites) {
+                site.x -= site.xv + 1 * site.a;
+                site.y -= site.yv + 0.2 * site.a;
+                site.x -= 2;
+                site.xv *= .998;
+                site.yv *= .998;
+                site.a *= 1.001;
+            }
+            // Randomly generate new points
+            if (Math.floor(Math.random() * 15) == 0) {
+                let tmp_site = new Point(this.canvas.width*1.5, this.canvas.height*1.0);
+                tmp_site.xv = Math.random() * 5;
+                tmp_site.yv = Math.random() * 2;
+                tmp_site.a = 1.0;
+                this.sites.push(tmp_site);
+            }
+            // TODO: We should probably remove points over time as they leave the screen
+      }, 50);
+    }
+
+    genRandomSites(numSites) {
+        this.sites = [];
+        // Generate random vertices within given range
+        let dx = this.canvas.width * 2;
+        let dy = this.canvas.height * 2;
+        for (var i = 0; i < numSites; i++) {
+            this.sites.push(new Point(
+                Math.random() * dx + Math.random() / dx,
+                Math.random() * dy + Math.random() / dy
+            ));
+        }
+        var v = new Voronoi(this.sites);
+        this.diagram = v.data();
+    }
+
+    recompute() {
+        var v = new Voronoi(this.sites);
+        this.diagram = v.data();
+    }
+
+    renderStatic() {
+        var ctx = this.canvas.getContext('2d');
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.rect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.strokeStyle = '#888';
+        ctx.stroke();
+        // Render voronoi
+        if (!this.diagram) {
+            return;
+        }
+        // Render edges of voronoi diagram
+        ctx.beginPath();
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 5;
+        for (let edge of this.diagram.voronoi) {
+            ctx.moveTo(edge.p1.x, edge.p1.y);
+            ctx.lineTo(edge.p2.x, edge.p2.y);
+        }
+        ctx.stroke();
+        if ($('#show_delaunay').prop('checked')) {
+            ctx.beginPath();
+            ctx.strokeStyle = '#1cd704';
+            ctx.lineWidth = 5;
+            for (let edge of this.diagram.triangulation) {
+                ctx.moveTo(edge.p1.x, edge.p1.y);
+                ctx.lineTo(edge.p2.x, edge.p2.y);
+            }
+            ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.fillStyle = '#c91200';
+        for (let v of this.sites) {
+            ctx.rect(v.x-2, v.y - 2, 4, 4);
+        }
+        ctx.fill();
+    }
+
+    renderLava() {
+        var ctx = this.canvas.getContext('2d');
+        // Render background
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.rect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.fillStyle = '#360000';
+        ctx.fill();
+        ctx.strokeStyle = '#888';
+        ctx.stroke();
+        // Render voronoi
+        if (!this.diagram) {
+            return;
+        }
+        // Render edges of voronoi diagram
+        ctx.beginPath();
+        ctx.strokeStyle = '#4b0707';
+        ctx.lineWidth = 40;
+        for (let edge of this.diagram.voronoi) {
+            ctx.moveTo(edge.p1.x, edge.p1.y);
+            ctx.lineTo(edge.p2.x, edge.p2.y);
+        }
+        // Different strokes styles for gradient effect
+        ctx.stroke();
+        ctx.strokeStyle = '#a22706';
+        ctx.lineWidth = 15;
+        ctx.stroke();
+        ctx.strokeStyle = '#f0bc48';
+        ctx.lineWidth = 7
+        ctx.stroke();
+        ctx.strokeStyle = '#ffe68f';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.fillStyle = '#c91200';
+        for (let v of this.sites) {
+            ctx.rect(v.x - 2 / 3, v.y - 2 / 3, 2, 2);
+        }
+        ctx.fill();
+    }
+}
 
 $(function() {
-    let points = [];
-
-    // for (var i = 0; i < pNum; i++) {
-    //   points.push(new Point(Math.random() * C_WIDTH, Math.random() * C_HEIGHT));
-    // }
-    $("#canvas").click(function(event) {
-        var $canvas = $("#canvas");
-        var x = event.offsetX;
-        var y = event.offsetY;
-        points.push(new Point(x, y));
-
-
-
-        if (points.length >= 3) {
-            $canvas.clearCanvas();
-            let v = new Voronoi(points);
-            v.generate();
-            var data = v.data();
-            console.log(data);
-            v.draw($canvas);
-
-        } else {
-        $canvas.drawArc({
-                strokeStyle: 'steelBlue',
-                strokeStyle: 'blue',
-                strokeWidth: 4,
-                x: x, y: y,
-                radius: 2
-            });
+    let demo = new Demo();
+    let $dropDown = $('#demo_options');
+    let $delaunayCheckBox = $('#show_delaunay')
+    $dropDown.on('change', () => {
+        if ($dropDown.val() == 'static') {
+            demo.runStatic();
+        } else if ($dropDown.val() == 'lava') {
+            demo.runLavaSim();
         }
     });
+    $delaunayCheckBox.on('change', () => {
+        demo.renderStatic();
+    });
+    demo.runStatic();
 });

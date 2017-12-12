@@ -5,8 +5,20 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jcanvas/20.1.4/min/jcanvas.min.js"></script>
     <script src="voronoi.babelized.js"></script>
+    <link href="style.css" rel="stylesheet">
   </head>
   <body>
     <canvas width=1000 height=700 id="canvas"></canvas>
+    <div>
+        <label>Show delaunay triangulation</label>
+        <input id="show_delaunay" type="checkbox">
+    </div>
+    <div>
+        <label>Demo mode</label>
+        <select id="demo_options">
+          <option value="static">Static</option>
+          <option value="lava">Lava</option>
+        </select>
+    </div>
   </body>
 </html>
