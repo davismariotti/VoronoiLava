@@ -131,8 +131,6 @@ class Edge {
     }
 
     containsVertex(point) {
-
-        console.log("point", point);
         return this.pt1.equals(point) || this.pt2.equals(point);
     }
 
@@ -225,7 +223,6 @@ class Voronoi {
             pointsOut.push(point.jsonify());
         }
         output['points'] = pointsOut;
-
         for (let triangle of this.triangles) {
             for (let e of triangle.edges) {
                 if (!this.edgeInArray(e, triangleEdgesTemp)) {
@@ -233,27 +230,28 @@ class Voronoi {
                 }
             }
         }
-
         for (let edge of triangleEdgesTemp) {
             triangleEdges.push(edge.jsonify());
         }
 
         output['triangulation'] = triangleEdges;
 
-        var stack = [this.triangles[0]]; // Triangles
-        var visited = new Set(); // Edges
-        while (stack.length != 0) { // Inner voronoi edges
-            var triangle = stack.pop();
-            var neighbors = this.getNeighbors(triangle);
-            for (let neighbor of neighbors) {
-                var voronoiEdge = new Edge(neighbor.center, triangle.center);
-                if (!this.setHasEdge(visited, voronoiEdge)) {
-                    // If the edge hasn't been seen before
-                    visited.add(voronoiEdge);
-                    stack.push(neighbor);
-                    voronoiEdges.push(new Edge(
-                        new Point(neighbor.center.x, neighbor.center.y),
-                        new Point(triangle.center.x, triangle.center.y)).jsonify());
+        if (this.triangles && this.triangles.length) {
+            var stack = [this.triangles[0]]; // Triangles
+            var visited = new Set(); // Edges
+            while (stack.length != 0) { // Inner voronoi edges
+                var triangle = stack.pop();
+                var neighbors = this.getNeighbors(triangle);
+                for (let neighbor of neighbors) {
+                    var voronoiEdge = new Edge(neighbor.center, triangle.center);
+                    if (!this.setHasEdge(visited, voronoiEdge)) {
+                        // If the edge hasn't been seen before
+                        visited.add(voronoiEdge);
+                        stack.push(neighbor);
+                        voronoiEdges.push(new Edge(
+                            new Point(neighbor.center.x, neighbor.center.y),
+                            new Point(triangle.center.x, triangle.center.y)).jsonify());
+                    }
                 }
             }
         }
@@ -300,19 +298,17 @@ class Voronoi {
     }
 
     generateSuperTriangles() {
-        let p1 = new Point(-0.1, -0.1);
-        let p2 = new Point(C_WIDTH + 0.1, -0.1);
-        let p3 = new Point(-0.1, C_HEIGHT + 0.1);
-        let p4 = new Point(C_WIDTH + 0.1, C_HEIGHT + 0.1);
+        let p1 = new Point(-500*C_WIDTH, -500*C_WIDTH);
+        let p2 = new Point(1000*C_WIDTH, -500*C_WIDTH);
+        let p3 = new Point(-500*C_WIDTH, 1000*C_WIDTH);
 
-        this.points.push(p1, p2, p3, p4);
-        this.superPoints.push(p1, p2, p3, p4);
+        this.points.push(p1, p2, p3);
+        this.superPoints.push(p1, p2, p3);
 
-        let t1 = new Triangle(p1, p2, p4);
-        let t2 = new Triangle(p1, p3, p4);
+        let t1 = new Triangle(p1, p2, p3);
 
-        this.triangles.push(t1, t2);
-        return [t1, t2];
+        this.triangles.push(t1);
+        return [t1];
     }
 
     removeSuperTriangles() {
@@ -477,10 +473,19 @@ class Demo {
     
     runStatic() {
         canvas.addEventListener('click',(e) => {
-            console.log(this.diagram);
-            this.sites.push(new Point(e.offsetX, e.offsetY));
-            this.recompute();
-            this.renderStatic();
+            let tmp_p = new Point(e.offsetX, e.offsetY);
+            let unique = true;
+            for (let s of this.sites) {
+                if (s.equals(tmp_p)) {
+                    unique = false;
+                    break;
+                }
+            }
+            if (unique) {
+                this.sites.push(new Point(e.offsetX, e.offsetY));
+                this.recompute();
+                this.renderStatic();
+            }
         }, false);
         if (this.lavaRender) {
             clearInterval(this.lavaRender);
@@ -493,7 +498,7 @@ class Demo {
     
     runLavaSim() {
         // Generate random distribution of sites
-        this.genRandomSites(20);
+        this.genRandomSites(50);
         for (let site of this.sites) {
             site.xv = Math.random() * 5;
             site.yv = Math.random() * 2;
@@ -504,23 +509,29 @@ class Demo {
             this.recompute();
             this.renderLava();
             // Update position and velocity for each point
-            for (let site of this.sites) {
+            for (let i = 0; i < this.sites.length; i++) {
+                let site = this.sites[i];
                 site.x -= site.xv + 1 * site.a;
                 site.y -= site.yv + 0.2 * site.a;
                 site.x -= 2;
+                // Remove sites well offscreen
+                if (site.x < -C_WIDTH) {
+                    this.sites.splice(i, 1);
+                    continue;
+                }
                 site.xv *= .998;
                 site.yv *= .998;
                 site.a *= 1.001;
             }
             // Randomly generate new points
-            if (Math.floor(Math.random() * 15) == 0) {
-                let tmp_site = new Point(this.canvas.width*1.5, this.canvas.height*1.0);
+            if (Math.floor(Math.random() * 8) == 0) {
+                let tmp_site = new Point(this.canvas.width*1.5, this.canvas.height*2.0*Math.random());
                 tmp_site.xv = Math.random() * 5;
                 tmp_site.yv = Math.random() * 2;
                 tmp_site.a = 1.0;
                 this.sites.push(tmp_site);
             }
-            // TODO: We should probably remove points over time as they leave the screen
+            $('#num_points').html(' Num points: ' + this.sites.length);
       }, 50);
     }
 
@@ -535,12 +546,12 @@ class Demo {
                 Math.random() * dy + Math.random() / dy
             ));
         }
-        var v = new Voronoi(this.sites);
+        var v = new Voronoi(this.sites.slice());
         this.diagram = v.data();
     }
 
     recompute() {
-        var v = new Voronoi(this.sites);
+        var v = new Voronoi(this.sites.slice());
         this.diagram = v.data();
     }
 
@@ -579,7 +590,7 @@ class Demo {
         ctx.beginPath();
         ctx.fillStyle = '#c91200';
         for (let v of this.sites) {
-            ctx.rect(v.x-2, v.y - 2, 4, 4);
+            ctx.rect(v.x-2, v.y - 2, 4, 2);
         }
         ctx.fill();
     }
