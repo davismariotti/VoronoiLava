@@ -4,8 +4,8 @@ const C_HEIGHT = 700;
 
 function areaOfTriangle(p1, p2, p3) {
     return Math.abs((p1.x * (p2.y - p3.y) +
-                     p2.x * (p3.y - p1.y) +
-                     p3.x * (p1.y - p2.y)) / 2.0);
+        p2.x * (p3.y - p1.y) +
+        p3.x * (p1.y - p2.y)) / 2.0);
 }
 
 class Triangle {
@@ -29,8 +29,8 @@ class Triangle {
 
     containsEdge(edge) {
         return (this.edges[0].equals(edge)) ||
-               (this.edges[1].equals(edge)) ||
-               (this.edges[2].equals(edge));
+            (this.edges[1].equals(edge)) ||
+            (this.edges[2].equals(edge));
     }
 
     containsPoint(point) {
@@ -43,8 +43,8 @@ class Triangle {
 
     sharesVertex(t) {
         return t.p1.equals(this.p1) || t.p1.equals(this.p2) || t.p1.equals(this.p3) ||
-               t.p2.equals(this.p1) || t.p2.equals(this.p2) || t.p2.equals(this.p3) ||
-               t.p3.equals(this.p1) || t.p3.equals(this.p2) || t.p3.equals(this.p3);
+            t.p2.equals(this.p1) || t.p2.equals(this.p2) || t.p2.equals(this.p3) ||
+            t.p3.equals(this.p1) || t.p3.equals(this.p2) || t.p3.equals(this.p3);
     }
 
     sharesEdge(tri) {
@@ -103,11 +103,14 @@ class Point {
     }
 
     distanceTo(pt) {
-        return Math.sqrt((Math.pow(pt.x-this.x,2))+(Math.pow(pt.y-this.y,2)));
+        return Math.sqrt((Math.pow(pt.x - this.x, 2)) + (Math.pow(pt.y - this.y, 2)));
     };
 
     jsonify() {
-        return {'x': this.x, 'y': this.y};
+        return {
+            'x': this.x,
+            'y': this.y
+        };
     }
 }
 
@@ -119,7 +122,10 @@ class Edge {
     }
 
     jsonify() {
-        return {'p1': this.pt1.jsonify(), 'p2': this.pt2.jsonify()};
+        return {
+            'p1': this.pt1.jsonify(),
+            'p2': this.pt2.jsonify()
+        };
     }
 
     midpoint() {
@@ -140,7 +146,7 @@ class Edge {
 
     equals(edge) {
         return edge.pt1.equals(this.pt1) && edge.pt2.equals(this.pt2) ||
-               edge.pt2.equals(this.pt1) && edge.pt1.equals(this.pt2);
+            edge.pt2.equals(this.pt1) && edge.pt1.equals(this.pt2);
     }
 
     isUniqueIn(edges) {
@@ -181,7 +187,7 @@ class Voronoi {
 
         let ptNeighbors = {};
         for (let pt of this.points) {
-            let _triangles  = ptToTri[pt];
+            let _triangles = ptToTri[pt];
             let neighbors = new Set();
             if (_triangles != null) {
                 for (let j = 0; j < _triangles.length; j++) {
@@ -296,9 +302,9 @@ class Voronoi {
     }
 
     generateSuperTriangles() {
-        let p1 = new Point(-500*C_WIDTH, -500*C_WIDTH);
-        let p2 = new Point(1000*C_WIDTH, -500*C_WIDTH);
-        let p3 = new Point(-500*C_WIDTH, 1000*C_WIDTH);
+        let p1 = new Point(-500 * C_WIDTH, -500 * C_WIDTH);
+        let p2 = new Point(1000 * C_WIDTH, -500 * C_WIDTH);
+        let p3 = new Point(-500 * C_WIDTH, 1000 * C_WIDTH);
 
         this.points.push(p1, p2, p3);
         this.superPoints.push(p1, p2, p3);
@@ -364,9 +370,12 @@ class Voronoi {
             c.drawLine({
                 strokeStyle: 'steelBlue',
                 strokeWidth: 4,
-                x1: tri.p1.x, y1: tri.p1.y,
-                x2: tri.p2.x, y2: tri.p2.y,
-                x3: tri.p3.x, y3: tri.p3.y,
+                x1: tri.p1.x,
+                y1: tri.p1.y,
+                x2: tri.p2.x,
+                y2: tri.p2.y,
+                x3: tri.p3.x,
+                y3: tri.p3.y,
                 closed: true,
                 rounded: true
             });
@@ -377,7 +386,8 @@ class Voronoi {
             c.drawArc({
                 strokeStyle: 'red',
                 strokeWidth: 4,
-                x: triangle.center.x, y: triangle.center.y,
+                x: triangle.center.x,
+                y: triangle.center.y,
                 radius: 1
             });
         }
@@ -400,8 +410,10 @@ class Voronoi {
                     c.drawLine({
                         strokeStyle: 'red',
                         strokeWidth: 4,
-                        x1: neighbor.center.x, y1: neighbor.center.y,
-                        x2: triangle.center.x, y2: triangle.center.y,
+                        x1: neighbor.center.x,
+                        y1: neighbor.center.y,
+                        x2: triangle.center.x,
+                        y2: triangle.center.y,
                         closed: true,
                         rounded: true
                     });
@@ -430,8 +442,10 @@ class Voronoi {
                         c.drawLine({
                             strokeStyle: 'steelBlue',
                             strokeWidth: 4,
-                            x1: edge.pt1.x, y1: edge.pt1.y,
-                            x2: edge.pt2.x, y2: edge.pt2.y,
+                            x1: edge.pt1.x,
+                            y1: edge.pt1.y,
+                            x2: edge.pt2.x,
+                            y2: edge.pt2.y,
                             closed: true,
                             rounded: true
                         });
@@ -446,7 +460,8 @@ class Voronoi {
                 strokeStyle: 'steelBlue',
                 strokeStyle: 'blue',
                 strokeWidth: 4,
-                x: p.x, y: p.y,
+                x: p.x,
+                y: p.y,
                 radius: 2
             });
         }
@@ -456,19 +471,19 @@ class Voronoi {
 class Demo {
     constructor() {
         this.voronoi = new Voronoi([]),
-        this.sites = [],
-        this.diagram = null,
-        this.margin = 0.15,
-        this.canvas = document.getElementById('canvas'),
-        this.bbox = {
-            xl: 0,
-            xr: 800,
-            yt: 0,
-            yb: 600
-        },
-        this.lavaRender = null,
-        this.renderMode = 'static',
-        this.trackCursor = false;
+            this.sites = [],
+            this.diagram = null,
+            this.margin = 0.15,
+            this.canvas = document.getElementById('canvas'),
+            this.bbox = {
+                xl: 0,
+                xr: 800,
+                yt: 0,
+                yb: 600
+            },
+            this.lavaRender = null,
+            this.renderMode = 'static',
+            this.trackCursor = false;
     }
 
     runStatic() {
@@ -477,7 +492,7 @@ class Demo {
         }
         // Generate random distribution of sites
         //this.genRandomSites(20);
-        
+
         this.recompute();
         this.renderStatic();
     }
@@ -511,14 +526,14 @@ class Demo {
             }
             // Randomly generate new points
             if (Math.floor(Math.random() * 8) == 0) {
-                let tmp_site = new Point(this.canvas.width*1.5, this.canvas.height*2.0*Math.random());
+                let tmp_site = new Point(this.canvas.width * 1.5, this.canvas.height * 2.0 * Math.random());
                 tmp_site.xv = Math.random() * 5;
                 tmp_site.yv = Math.random() * 2;
                 tmp_site.a = 1.0;
                 this.sites.push(tmp_site);
             }
             $('#num_points').html(' Num points: ' + this.sites.length);
-      }, 50);
+        }, 50);
     }
 
     genRandomSites(numSites) {
@@ -578,7 +593,7 @@ class Demo {
         ctx.beginPath();
         ctx.fillStyle = '#c91200';
         for (let v of this.sites) {
-            ctx.rect(v.x-2, v.y - 2, 4, 2);
+            ctx.rect(v.x - 2, v.y - 2, 4, 2);
         }
         ctx.fill();
     }
@@ -640,7 +655,7 @@ $(function() {
             demo.renderMode = 'lava';
         }
     });
-    c.addEventListener('click',(e) => {
+    c.addEventListener('click', (e) => {
         let tmp_p = new Point(e.offsetX, e.offsetY);
         let unique = true;
         for (let s of demo.sites) {
