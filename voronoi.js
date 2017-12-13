@@ -528,8 +528,8 @@ class Demo {
         let dy = this.canvas.height * 2;
         for (var i = 0; i < numSites; i++) {
             this.sites.push(new Point(
-                Math.random() * dx + Math.random() / dx,
-                Math.random() * dy + Math.random() / dy
+                (Math.random() * dx + Math.random() / dx) - (this.canvas.width / 2),
+                Math.random() * dy + Math.random() / dy - (this.canvas.height / 2)
             ));
         }
         var v = new Voronoi(this.sites.slice());
