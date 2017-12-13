@@ -56,10 +56,11 @@ class Triangle {
         return a == (a1 + a2 + a3);
     }
 
-    sharesVertex(t) {
-        return t.p1.equals(this.p1) || t.p1.equals(this.p2) || t.p1.equals(this.p3) ||
-            t.p2.equals(this.p1) || t.p2.equals(this.p2) || t.p2.equals(this.p3) ||
-            t.p3.equals(this.p1) || t.p3.equals(this.p2) || t.p3.equals(this.p3);
+    /**
+     * Checks if the triangle shares a vertex with the specified triangle
+     */
+    sharesVertex(tri) {
+        return tri.containsVertex(this.p1) || tri.containsVertex(this.p2) || tri.containsVertex(this.p3);
     }
 
     /**
@@ -175,19 +176,11 @@ class Edge {
         return new Point((this.pt1.x + this.pt2.x) / 2, (this.pt1.y + this.pt2.y) / 2);
     }
 
-    slope() {
-        return (this.pt2.y - this.pt1.y) / (this.pt2.x - this.pt1.x);
-    }
-
     /**
      * Checks if the edge contains the specified vertex
      */
     containsVertex(point) {
         return this.pt1.equals(point) || this.pt2.equals(point);
-    }
-
-    perpendicularSlope() {
-        return -1 / this.slope();
     }
 
     /**
@@ -218,7 +211,6 @@ class Voronoi {
         this.triangles = [];
         this.superTriangles = [];
         this.superPoints = []
-        this._tris = [];
         this.generate();
     }
 
@@ -309,7 +301,7 @@ class Voronoi {
                 var neighbors = this.getNeighbors(triangle);
                 for (let neighbor of neighbors) {
                     var voronoiEdge = new Edge(neighbor.center, triangle.center);
-                    if (!this.setHasEdge(visited, voronoiEdge)) {
+                    if (!this.setContainsEdge(visited, voronoiEdge)) {
                         // If the edge hasn't been seen before
                         visited.add(voronoiEdge);
                         stack.push(neighbor);
@@ -361,7 +353,6 @@ class Voronoi {
 
         for (let e of uniqueEdges) {
             this.triangles.push(new Triangle(pt, e.pt1, e.pt2));
-            this._tris.push(new Triangle(pt, e.pt1, e.pt2));
         }
     }
 
@@ -428,119 +419,16 @@ class Voronoi {
         return tris;
     }
 
-    setHasEdge(_set, e) {
     /**
      * Checks if a set contains the specified edge
      */
+    setContainsEdge(_set, e) {
         for (let edge of _set) {
             if (e.equals(edge)) {
                 return true;
             }
         }
         return false;
-    }
-
-    draw(c) {
-
-        for (let tri of this.triangles) {
-            c.drawLine({
-                strokeStyle: 'steelBlue',
-                strokeWidth: 4,
-                x1: tri.p1.x,
-                y1: tri.p1.y,
-                x2: tri.p2.x,
-                y2: tri.p2.y,
-                x3: tri.p3.x,
-                y3: tri.p3.y,
-                closed: true,
-                rounded: true
-            });
-        }
-
-        // Draw circumcircles
-        for (let triangle of this.triangles) {
-            c.drawArc({
-                strokeStyle: 'red',
-                strokeWidth: 4,
-                x: triangle.center.x,
-                y: triangle.center.y,
-                radius: 1
-            });
-        }
-
-        /*
-        This does a depth first traversal to connect all the circumcenters
-        together.
-        */
-        var stack = [this.triangles[0]]; // Triangles
-        var visited = new Set(); // Edges
-        while (stack.length != 0) { // Inner voronoi edges
-            var triangle = stack.pop();
-            var neighbors = this.getNeighbors(triangle);
-            for (let neighbor of neighbors) {
-                var voronoiEdge = new Edge(neighbor.center, triangle.center);
-                if (!this.setHasEdge(visited, voronoiEdge)) {
-                    // If the edge hasn't been seen before
-                    visited.add(voronoiEdge);
-                    stack.push(neighbor);
-                    c.drawLine({
-                        strokeStyle: 'red',
-                        strokeWidth: 4,
-                        x1: neighbor.center.x,
-                        y1: neighbor.center.y,
-                        x2: triangle.center.x,
-                        y2: triangle.center.y,
-                        closed: true,
-                        rounded: true
-                    });
-                }
-            }
-        }
-
-        /*
-            The above code cannot add voronoi edges when there is no neighbor
-            i.e. an edge that goes off screen. The following implements that.
-        */
-        for (let tri of this.triangles) {
-            var neighbors = this.getNeighbors(tri);
-            var edgesToDrawToBorder = [];
-            if (neighbors.length < 3) {
-                for (let edge of tri.edges) {
-                    var neighborEdge = false;
-                    for (let neighbor of neighbors) {
-                        if (neighbor.containsEdge(edge)) {
-                            neighborEdge = true;
-                        }
-                    }
-                    if (!neighborEdge) {
-                        edgesToDrawToBorder.push(edge);
-
-                        c.drawLine({
-                            strokeStyle: 'steelBlue',
-                            strokeWidth: 4,
-                            x1: edge.pt1.x,
-                            y1: edge.pt1.y,
-                            x2: edge.pt2.x,
-                            y2: edge.pt2.y,
-                            closed: true,
-                            rounded: true
-                        });
-                    }
-                }
-            }
-        }
-
-        // Draw vertices
-        for (let p of this.points) {
-            c.drawArc({
-                strokeStyle: 'steelBlue',
-                strokeStyle: 'blue',
-                strokeWidth: 4,
-                x: p.x,
-                y: p.y,
-                radius: 2
-            });
-        }
     }
 }
 
