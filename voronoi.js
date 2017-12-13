@@ -170,8 +170,6 @@ class Voronoi {
         for (let i = 0; i < this.points.length; i++) {
             this.addVertex(i);
         }
-
-
         this.removeSuperTriangles();
 
         let ptToTri = {};
@@ -470,7 +468,7 @@ class Demo {
         },
         this.lavaRender = null
     }
-    
+
     runStatic() {
         canvas.addEventListener('click',(e) => {
             let tmp_p = new Point(e.offsetX, e.offsetY);
@@ -495,7 +493,7 @@ class Demo {
         this.recompute();
         this.renderStatic();
     }
-    
+
     runLavaSim() {
         // Generate random distribution of sites
         this.genRandomSites(50);
@@ -568,20 +566,22 @@ class Demo {
         if (!this.diagram) {
             return;
         }
-        // Render edges of voronoi diagram
-        ctx.beginPath();
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 5;
-        for (let edge of this.diagram.voronoi) {
-            ctx.moveTo(edge.p1.x, edge.p1.y);
-            ctx.lineTo(edge.p2.x, edge.p2.y);
-        }
-        ctx.stroke();
         if ($('#show_delaunay').prop('checked')) {
             ctx.beginPath();
             ctx.strokeStyle = '#1cd704';
             ctx.lineWidth = 5;
             for (let edge of this.diagram.triangulation) {
+                ctx.moveTo(edge.p1.x, edge.p1.y);
+                ctx.lineTo(edge.p2.x, edge.p2.y);
+            }
+            ctx.stroke();
+        }
+        // Render edges of voronoi diagram
+        if ($('#show_voronoi').prop('checked')) {
+            ctx.beginPath();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 5;
+            for (let edge of this.diagram.voronoi) {
                 ctx.moveTo(edge.p1.x, edge.p1.y);
                 ctx.lineTo(edge.p2.x, edge.p2.y);
             }
@@ -641,6 +641,7 @@ $(function() {
     let demo = new Demo();
     let $dropDown = $('#demo_options');
     let $delaunayCheckBox = $('#show_delaunay')
+    let $voronoiCheckbox = $('#show_voronoi')
     $dropDown.on('change', () => {
         if ($dropDown.val() == 'static') {
             demo.runStatic();
@@ -649,6 +650,9 @@ $(function() {
         }
     });
     $delaunayCheckBox.on('change', () => {
+        demo.renderStatic();
+    });
+    $voronoiCheckbox.on('change', () => {
         demo.renderStatic();
     });
     demo.runStatic();
