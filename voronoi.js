@@ -1,4 +1,3 @@
-const EPSILON = 0.000000001;
 const C_WIDTH = 1000;
 const C_HEIGHT = 700;
 
@@ -130,7 +129,6 @@ class Point {
      */
     equals(p) {
         return p.x == this.x && p.y == this.y;
-        //return Math.abs(p.x - this.x) < EPSILON && Math.abs(p.y - this.y) < EPSILON;
     }
 
     /**
@@ -435,19 +433,19 @@ class Voronoi {
 class Demo {
     constructor() {
         this.voronoi = new Voronoi([]),
-            this.sites = [],
-            this.diagram = null,
-            this.margin = 0.15,
-            this.canvas = document.getElementById('canvas'),
-            this.bbox = {
-                xl: 0,
-                xr: 800,
-                yt: 0,
-                yb: 600
-            },
-            this.lavaRender = null,
-            this.renderMode = 'static',
-            this.trackCursor = false;
+        this.sites = [],
+        this.diagram = null,
+        this.margin = 0.15,
+        this.canvas = document.getElementById('canvas'),
+        this.bbox = {
+            xl: 0,
+            xr: 800,
+            yt: 0,
+            yb: 600
+        },
+        this.lavaRender = null,
+        this.renderMode = 'static',
+        this.trackCursor = false;
     }
 
     runStatic() {
