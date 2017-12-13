@@ -2,6 +2,9 @@ const EPSILON = 0.000000001;
 const C_WIDTH = 1000;
 const C_HEIGHT = 700;
 
+/**
+ * Finds the area of a triangle
+ */
 function areaOfTriangle(p1, p2, p3) {
     return Math.abs((p1.x * (p2.y - p3.y) +
         p2.x * (p3.y - p1.y) +
@@ -19,20 +22,32 @@ class Triangle {
         this.rad = circumcircle.rad;
     }
 
+    /**
+     * Checks if a Triangle circumscribes a Point
+     */
     circumscribes(pt) {
         return pt.distanceTo(this.center) < this.rad;
     }
 
+    /**
+     * Checks if the triangle contains the specified vertex
+     */
     containsVertex(point) {
         return point.equals(this.p1) || point.equals(this.p2) || point.equals(this.p3);
     }
 
+    /**
+     * Checks if the triangle contains the specified edge
+     */
     containsEdge(edge) {
         return (this.edges[0].equals(edge)) ||
             (this.edges[1].equals(edge)) ||
             (this.edges[2].equals(edge));
     }
 
+    /**
+     * Checks if the triangle contains the specified point inside of it
+     */
     containsPoint(point) {
         var a = areaOfTriangle(this.p1, this.p2, this.p3);
         var a1 = areaOfTriangle(point, this.p2, this.p3);
@@ -47,6 +62,9 @@ class Triangle {
             t.p3.equals(this.p1) || t.p3.equals(this.p2) || t.p3.equals(this.p3);
     }
 
+    /**
+     * Checks if the triangle shares an edge with the specified triangle
+     */
     sharesEdge(tri) {
         for (let e of this.edges) {
             if (tri.containsEdge(e)) {
@@ -56,6 +74,9 @@ class Triangle {
         return false;
     }
 
+    /**
+     * Returns the point on the triangle that is not in the specified edge
+     */
     minusEdge(edge) {
         if (!edge.containsVertex(this.p1)) {
             return this.p1;
@@ -66,10 +87,16 @@ class Triangle {
         }
     }
 
+    /**
+     * Checks if the triangle equals the specified triangle
+     */
     equals(tri) {
         return tri.containsEdge(this.edges[0]) && tri.containsEdge(this.edges[1]) && tri.containsEdge(this.edges[2]);
     }
 
+    /**
+     * Calculates the circumcircle of the triangle
+     */
     circumcircle() {
         var x2copy = this.p2.x - this.p1.x;
         var y2copy = this.p2.y - this.p1.y;
@@ -97,15 +124,24 @@ class Point {
         this.y = y;
     }
 
+    /**
+     * Checks if the point equals the specified point
+     */
     equals(p) {
         return p.x == this.x && p.y == this.y;
         //return Math.abs(p.x - this.x) < EPSILON && Math.abs(p.y - this.y) < EPSILON;
     }
 
+    /**
+     * Calculates the distance to another specified point
+     */
     distanceTo(pt) {
         return Math.sqrt((Math.pow(pt.x - this.x, 2)) + (Math.pow(pt.y - this.y, 2)));
     };
 
+    /**
+     * JSONifies the point
+     */
     jsonify() {
         return {
             'x': this.x,
@@ -121,6 +157,9 @@ class Edge {
         this.midpoint = this.midpoint();
     }
 
+    /**
+     * JSONifies the edge
+     */
     jsonify() {
         return {
             'p1': this.pt1.jsonify(),
@@ -128,6 +167,10 @@ class Edge {
         };
     }
 
+
+    /**
+     * Calculates the midpoint of the edge
+     */
     midpoint() {
         return new Point((this.pt1.x + this.pt2.x) / 2, (this.pt1.y + this.pt2.y) / 2);
     }
@@ -136,6 +179,9 @@ class Edge {
         return (this.pt2.y - this.pt1.y) / (this.pt2.x - this.pt1.x);
     }
 
+    /**
+     * Checks if the edge contains the specified vertex
+     */
     containsVertex(point) {
         return this.pt1.equals(point) || this.pt2.equals(point);
     }
@@ -144,11 +190,17 @@ class Edge {
         return -1 / this.slope();
     }
 
+    /**
+     * Checks if the edge equals the specified edge
+     */
     equals(edge) {
         return edge.pt1.equals(this.pt1) && edge.pt2.equals(this.pt2) ||
             edge.pt2.equals(this.pt1) && edge.pt1.equals(this.pt2);
     }
 
+    /**
+     * Checks if the edge is unique in the specified array of edges
+     */
     isUniqueIn(edges) {
         for (let e of edges) {
             if (e == this) {
@@ -170,6 +222,9 @@ class Voronoi {
         this.generate();
     }
 
+    /**
+     * Generates the delaunay triangulation
+     */
     generate() {
         this.superTriangles = this.generateSuperTriangles();
 
@@ -207,6 +262,9 @@ class Voronoi {
         }
     }
 
+    /**
+     * Checks if an array of edges contains a specified edge
+     */
     edgeInArray(testEdge, arr) {
         for (let edge of arr) {
             if (testEdge.equals(edge)) {
@@ -216,6 +274,9 @@ class Voronoi {
         return false;
     }
 
+    /**
+     * Returns the voronoi diagram in JSON format
+     */
     data() {
         var output = {};
         var triangleEdges = [];
@@ -263,6 +324,9 @@ class Voronoi {
         return output;
     }
 
+    /**
+     * Adds a vertex to the triangulation
+     */
     addVertex(pIdx) {
         let pt = this.points[pIdx];
 
@@ -301,6 +365,9 @@ class Voronoi {
         }
     }
 
+    /**
+     * Generates a super triangle for the triangulation
+     */
     generateSuperTriangles() {
         let p1 = new Point(-500 * C_WIDTH, -500 * C_WIDTH);
         let p2 = new Point(1000 * C_WIDTH, -500 * C_WIDTH);
@@ -315,6 +382,9 @@ class Voronoi {
         return [t1];
     }
 
+    /**
+     * Removes the super triangle from the data
+     */
     removeSuperTriangles() {
         let mTriangles = [];
         for (let tri of this.triangles) {
@@ -342,6 +412,9 @@ class Voronoi {
         });
     }
 
+    /**
+     * Returns an array of triangles that neighbor the specified triangle
+     */
     getNeighbors(triangle) {
         var tris = [];
         for (let tri of this.triangles) {
@@ -356,6 +429,9 @@ class Voronoi {
     }
 
     setHasEdge(_set, e) {
+    /**
+     * Checks if a set contains the specified edge
+     */
         for (let edge of _set) {
             if (e.equals(edge)) {
                 return true;
