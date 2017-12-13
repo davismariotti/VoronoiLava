@@ -466,30 +466,18 @@ class Demo {
             yt: 0,
             yb: 600
         },
-        this.lavaRender = null
+        this.lavaRender = null,
+        this.renderMode = 'static',
+        this.trackCursor = false;
     }
 
     runStatic() {
-        canvas.addEventListener('click',(e) => {
-            let tmp_p = new Point(e.offsetX, e.offsetY);
-            let unique = true;
-            for (let s of this.sites) {
-                if (s.equals(tmp_p)) {
-                    unique = false;
-                    break;
-                }
-            }
-            if (unique) {
-                this.sites.push(new Point(e.offsetX, e.offsetY));
-                this.recompute();
-                this.renderStatic();
-            }
-        }, false);
         if (this.lavaRender) {
             clearInterval(this.lavaRender);
         }
         // Generate random distribution of sites
         //this.genRandomSites(20);
+        
         this.recompute();
         this.renderStatic();
     }
@@ -639,21 +627,91 @@ class Demo {
 
 $(function() {
     let demo = new Demo();
+    let c = document.getElementById('canvas');
     let $dropDown = $('#demo_options');
     let $delaunayCheckBox = $('#show_delaunay')
     let $voronoiCheckbox = $('#show_voronoi')
     $dropDown.on('change', () => {
         if ($dropDown.val() == 'static') {
             demo.runStatic();
+            demo.renderMode = 'static';
         } else if ($dropDown.val() == 'lava') {
             demo.runLavaSim();
+            demo.renderMode = 'lava';
         }
     });
+    c.addEventListener('click',(e) => {
+        let tmp_p = new Point(e.offsetX, e.offsetY);
+        let unique = true;
+        for (let s of demo.sites) {
+            if (s.equals(tmp_p)) {
+                unique = false;
+                break;
+            }
+        }
+        if (unique) {
+            if (demo.renderMode == 'lava') {
+                tmp_p.xv = Math.random() * 5;
+                tmp_p.yv = Math.random() * 2;
+                tmp_p.a = 1.0;
+                demo.sites.push(tmp_p);
+            } else {
+                demo.sites.push(tmp_p);
+                demo.runStatic();
+            }
+        }
+        $('#num_points').html(' Num points: ' + demo.sites.length);
+    }, false);
+    c.addEventListener('mousemove', (e) => {
+        if (!demo.trackCursor) {
+            return;
+        }
+        // remove previous cursor point
+        demo.sites = demo.sites.filter((site) => {
+            return !('cursorPoint' in site);
+        });
+        let rect = c.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+        let tmp_p = new Point(x, y);
+        let unique = true;
+        for (let s of demo.sites) {
+            if (s.equals(tmp_p)) {
+                unique = false;
+                break;
+            }
+        }
+        if (unique) {
+            // flag the point to remove next mouse movement
+            tmp_p.cursorPoint = 'true';
+            if (demo.renderMode == 'lava') {
+                tmp_p.xv = 0;
+                tmp_p.yv = 0;
+                tmp_p.a = 0;
+                demo.sites.push(tmp_p);
+            } else {
+                demo.sites.push(tmp_p);
+                demo.runStatic();
+            }
+        }
+    }, false);
     $delaunayCheckBox.on('change', () => {
         demo.renderStatic();
     });
     $voronoiCheckbox.on('change', () => {
         demo.renderStatic();
+    });
+    $('#track_cursor').on('change', () => {
+        demo.trackCursor = $('#track_cursor').prop('checked');
+        if (!demo.trackCursor) {
+            // remove previous cursor point
+            demo.sites = demo.sites.filter((site) => {
+                return !('cursorPoint' in site);
+            });
+            if (demo.renderMode == 'static') {
+                demo.runStatic();
+            }
+        }
     });
     demo.runStatic();
 });
